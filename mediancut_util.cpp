@@ -8,10 +8,10 @@
 int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
            double **X1, double **X2) {
   double max, s, t, v, sn, cs1;
-  int i1, i2, k = 0, ind = 1, p = 0, q = 0;
+  int k = 0, ind = 1, p = 0, q = 0;
   // 初期設定
-  for (i1 = 0; i1 < n; i1++) {
-    for (i2 = 0; i2 < n; i2++) {
+  for (int i1 = 0; i1 < n; i1++) {
+    for (int i2 = 0; i2 < n; i2++) {
       A1[i1][i2] = A[i1][i2];
       X1[i1][i2] = 0.0;
     }
@@ -21,8 +21,8 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
   while (ind > 0 && k < ct) {
     // 最大要素の探索
     max = 0.0;
-    for (i1 = 0; i1 < n; i1++) {
-      for (i2 = 0; i2 < n; i2++) {
+    for (int i1 = 0; i1 < n; i1++) {
+      for (int i2 = 0; i2 < n; i2++) {
         if (i2 != i1) {
           if (fabs(A1[i1][i2]) > max) {
             max = fabs(A1[i1][i2]);
@@ -47,9 +47,9 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
         sn = -sn;
       cs1 = sqrt(1.0 - sn * sn);
       // Akの計算
-      for (i1 = 0; i1 < n; i1++) {
+      for (int i1 = 0; i1 < n; i1++) {
         if (i1 == p) {
-          for (i2 = 0; i2 < n; i2++) {
+          for (int i2 = 0; i2 < n; i2++) {
             if (i2 == p)
               A2[p][p] = A1[p][p] * cs1 * cs1 + A1[q][q] * sn * sn -
                          2.0 * A1[p][q] * sn * cs1;
@@ -59,7 +59,7 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
               A2[p][i2] = A1[p][i2] * cs1 - A1[q][i2] * sn;
           }
         } else if (i1 == q) {
-          for (i2 = 0; i2 < n; i2++) {
+          for (int i2 = 0; i2 < n; i2++) {
             if (i2 == q)
               A2[q][q] = A1[p][p] * sn * sn + A1[q][q] * cs1 * cs1 +
                          2.0 * A1[p][q] * sn * cs1;
@@ -69,7 +69,7 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
               A2[q][i2] = A1[q][i2] * cs1 + A1[p][i2] * sn;
           }
         } else {
-          for (i2 = 0; i2 < n; i2++) {
+          for (int i2 = 0; i2 < n; i2++) {
             if (i2 == p)
               A2[i1][p] = A1[i1][p] * cs1 - A1[i1][q] * sn;
             else if (i2 == q)
@@ -80,8 +80,8 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
         }
       }
       // Xkの計算
-      for (i1 = 0; i1 < n; i1++) {
-        for (i2 = 0; i2 < n; i2++) {
+      for (int i1 = 0; i1 < n; i1++) {
+        for (int i2 = 0; i2 < n; i2++) {
           if (i2 == p)
             X2[i1][p] = X1[i1][p] * cs1 - X1[i1][q] * sn;
           else if (i2 == q)
@@ -92,8 +92,8 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
       }
       // 次のステップへ
       k++;
-      for (i1 = 0; i1 < n; i1++) {
-        for (i2 = 0; i2 < n; i2++) {
+      for (int i1 = 0; i1 < n; i1++) {
+        for (int i2 = 0; i2 < n; i2++) {
           A1[i1][i2] = A2[i1][i2];
           X1[i1][i2] = X2[i1][i2];
         }
@@ -423,7 +423,6 @@ int ohtsu(int NUM, const int *X) {
 
 int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
            int omh) {
-  int i, j;
   // NUM=7;
   // omh=3;
 
@@ -507,7 +506,7 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
   double HANTEI, HANTEI2;
   int THRESH, THRESH2;
   // printf("CMIN=%d,CMAX=%d,NODEHANI=%d\n",CMIN,CMAX,NODEHANI);
-  for (i = 1; i < NODEHANI; i++) {
+  for (int i = 1; i < NODEHANI; i++) {
     // printf("i=%d\n",i);
     AVE1 = 0.0;
     TOTAL1 = 0;
@@ -525,7 +524,7 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
     BUNZ2 = 0.0;
 
     // for(j=0;j<i;j++){
-    for (j = 0; j < NUM; j++) {
+    for (int j = 0; j < NUM; j++) {
       if (X[j] - (double)(CMIN) < (double)i) {
         AVE1 += X[j];
         AVEY1 += Y[j];
@@ -551,7 +550,7 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
     // TOTAL2 += (*(HIST+j));
     //}
     // AVE2 /= (float)(TOTAL2);
-    for (j = 0; j < NUM; j++) {
+    for (int j = 0; j < NUM; j++) {
       if (X[j] - (double)(CMIN) < (double)i) {
         BUN1 += (X[j] - AVE1) * (X[j] - AVE1);
         BUNY1 += (Y[j] - AVEY1) * (Y[j] - AVEY1);
@@ -607,7 +606,6 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
 } // main kansuu end
 
 int media(int NUM, const int *X) {
-  int i, j;
   // int SUM1;
   // int X[NUM] = {-10,-10,-10,-10,-10,
   // -10,-10,-10,-10,-10,
@@ -624,7 +622,7 @@ int media(int NUM, const int *X) {
   std::vector<int> HIST = Histogram(X, NUM, MIN, NODEHANI);
   int GOUKEI, MED;
   GOUKEI = 0;
-  for (i = 0; i < NODEHANI; i++) {
+  for (int i = 0; i < NODEHANI; i++) {
     GOUKEI += HIST[i];
     if (NUM / 2 < GOUKEI) {
       MED = i - 1;
@@ -643,17 +641,17 @@ int media(int NUM, const int *X) {
   float HANTEI;
   int THRESH;
   goto klk;
-  for (i = 1; i < NODEHANI; i++) {
+  for (int i = 1; i < NODEHANI; i++) {
     AVE1 = 0.0;
     TOTAL1 = 0;
-    for (j = 0; j < i; j++) {
+    for (int j = 0; j < i; j++) {
       AVE1 += HIST[j] * (j + MIN);
       TOTAL1 += HIST[j];
     }
     AVE1 /= (float)(TOTAL1);
     AVE2 = 0.0;
     TOTAL2 = 0;
-    for (j = i; j < NODEHANI; j++) {
+    for (int j = i; j < NODEHANI; j++) {
       AVE2 += HIST[j] * (j + MIN);
       TOTAL2 += HIST[j];
     }
