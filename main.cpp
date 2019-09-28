@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
   R = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
   fseek(fpr, 54, SEEK_SET);
   if (fread(vin, sizeof(unsigned char), filesizebyte - 54, fpr) !=
-      filesizebyte - 54) {
+      size_t(filesizebyte - 54)) {
     fprintf(stderr, "InputFileSizeError!!!\n");
     exit(0);
   }
