@@ -1119,7 +1119,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   for (int i = 0; i < hsize * vsize; i++) {
     *(INDEX + i) = -1;
   }
-  k = 0; l = 0;
+  int k2 = 0, l2 = 0;
   for (int i = 0; i < hsize * vsize; i++) {
     if (*(index3 + i) != -1) {
       // ZZ = X1[0][Y]*((double)(((*(YIN+i)))) - ((double)(U_R)+(*XXX))) +
@@ -1128,15 +1128,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       // if(ZZ>=0.0){
       if ((double)(*(RRR + i)) >= DTHRESH) {
         *(INDEX + i) = PT[MEN][0].INDEXNO;
-        k++;
+        k2++;
       } else {
         *(INDEX + i) = PT[MEN][1].INDEXNO;
-        l++;
+        l2++;
       }
     }
   }
-  PT[MEN][0].INDEXNUM = k;
-  PT[MEN][1].INDEXNUM = l;
+  PT[MEN][0].INDEXNUM = k2;
+  PT[MEN][1].INDEXNUM = l2;
   // maxdistance tuika start
   U_R = 0.0;
   U_G = 0.0;
@@ -1774,7 +1774,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   DTHRESH = (double)(THRESH);
   modoshi(V, DTHRESH, 0.0, 0.0, XXX, YYY, ZZZ);
 
-  k = 0; l = 0;
+  int k3 = 0, l3 = 0;
   for (int i = 0; i < hsize * vsize; i++) {
     if ((*(INDEX + i)) == j) {
       // ZZ = X1[0][Y]*((double)(((*(YIN+i)))) - ((double)(U_R)+(*XXX))) +
@@ -1783,17 +1783,17 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       // if(ZZ>=0.0){
       if (*(RRR33 + i) >= DTHRESH) {
         *(INDEX + i) = DIVIDENUM - 1;
-        k++;
+        k3++;
       } else {
         ;
-        l++;
+        l3++;
       }
     }
   }
   PT[MEN][0].INDEXNO = j;
   PT[MEN][1].INDEXNO = DIVIDENUM - 1;
-  PT[MEN][0].INDEXNUM = l;
-  PT[MEN][1].INDEXNUM = k;
+  PT[MEN][0].INDEXNUM = l3;
+  PT[MEN][1].INDEXNUM = k3;
 
   // max distance div tuika
 
@@ -2473,7 +2473,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     DTHRESH = (double)(THRESH);
     modoshi(V, DTHRESH, 0.0, 0.0, XXX, YYY, ZZZ);
 
-    k = 0; l = 0;
+    int k2 = 0, l2 = 0;
     for (int i = 0; i < hsize * vsize; i++) {
       if ((*(INDEX + i)) == PT[MEN][NUM].INDEXNO) {
         // ZZ = X1[0][Y]*((double)(((*(YIN+i)))) - ((double)(U_R)+(*XXX))) +
@@ -2482,10 +2482,10 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         // if(ZZ>=0.0){
         if (*(RRR33 + i) >= DTHRESH) {
           *(INDEX + i) = DIVIDENUM - 1;
-          k++;
+          k2++;
         } else {
           ;
-          l++;
+          l2++;
         }
       }
     }
@@ -2498,8 +2498,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
     PT[MEN][0].INDEXNO = PT[NMEN][NUM].INDEXNO;
     PT[MEN][1].INDEXNO = DIVIDENUM - 1;
-    PT[MEN][0].INDEXNUM = l;
-    PT[MEN][1].INDEXNUM = k;
+    PT[MEN][0].INDEXNUM = l2;
+    PT[MEN][1].INDEXNUM = k2;
     // debug start
     if (DIVIDENUM == 5 || DIVIDENUM == 6) {
       fprintf(stderr, "INDEXNO%d %d\n", PT[MEN][0].INDEXNO, l);
