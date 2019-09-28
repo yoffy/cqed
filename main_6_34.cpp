@@ -3610,7 +3610,7 @@ U_B /= PT[MEN][1].INDEXNUM;
         PT[MEN][1].MAXDISTANCE = MAXD;
     } else if(bun == 1){
 //    if(div != 4){   //2019.9.15  bug syuusei
-     if(vvv != 4)
+     if(vvv != 4){
     if(div == 0){
 TEMP = 0.0;
 for(i=0;i<hsize*vsize;i++){
