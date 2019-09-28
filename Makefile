@@ -1,6 +1,8 @@
 CXXFLAGS=-g -Wall -Wextra
 TARGET=cqed
-OBJS=main_6_34.o
+OBJS=mediancut_util.o \
+	 mediancut.o \
+	 main.o
 
 .PHONY: all
 all: $(TARGET)
