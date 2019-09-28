@@ -1,7 +1,9 @@
+#include <algorithm>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
            double **X1, double **X2) {
@@ -101,7 +103,6 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
 
   return ind;
 }
-
 
 void LuvtoRGB(double L, double u, double v, double *R, double *G, double *B) {
   double X, Y, Z, ud, vd, u0, v0, TEMP, L1;
@@ -290,7 +291,6 @@ void RGBtoLuv(double R, double G, double B, double *L, double *u, double *v) {
   // *b = (int)(200.0*(fY - fZ) + 0.5);
 }
 
-
 void LABtoRGB(double L, double a, double b, double *R, double *G, double *B) {
   // Convert between RGB and CIE-Lab color spaces
   // Uses ITU-R recommendation BT.709 with D65 as reference white.
@@ -369,70 +369,43 @@ void RGBtoLAB(double R, double G, double B, double *L, double *a, double *b) {
   *L = ((116.0 * tempY - 16.0));
 }
 
-int ohtsu(int NUM, int *X) {
-  int i, j;
-  // int SUM1;
-  // int X[NUM] = {-10,-10,-10,-10,-10,
-  // -10,-10,-10,-10,-10,
-  // -3,-3,-3,-3,-3,
-  // -1,-1,0,1,1,
-  // 3,3,3,3,3,
-  // 10,10,10,10,10,
-  // 10,10,10,10,10};
-  int MAX = -10000;
-  int MIN = 99999;
-  for (i = 0; i < NUM; i++) {
-    if (MIN > *(X + i)) {
-      MIN = *(X + i);
-    }
-    if (MAX < *(X + i)) {
-      MAX = *(X + i);
-    }
-  }
-  int NODEHANI;
-  NODEHANI = MAX - MIN + 1;
-  int *HIST;
-  HIST = (int *)malloc(sizeof(int) * NODEHANI);
-  // ND
-  // 0- -11
-  // 1- -10
-
-  // 11- 0
-
-  // 22- 11
-  for (i = 0; i < NODEHANI; i++) {
-    *(HIST + i) = 0;
-  }
+template <typename T>
+std::vector<T> Histogram(const T *X, int NUM, T MIN, int NODEHANI) {
+  std::vector<int> HIST(NODEHANI);
   int TMP;
-  for (i = 0; i < NUM; i++) {
+  for (int i = 0; i < NUM; i++) {
     TMP = *(X + i) - MIN;
-    (*(HIST + TMP))++;
+    HIST[TMP]++;
   }
-  // debug start
-  // for(i=0;i<NODEHANI;i++){
-  // fprintf(stderr,"NUM ATAI HIST %d %d %d\n",i,i+MIN,*(HIST+i));
-  //}
-  // while(1);
-  // debug end
+  return HIST;
+}
+
+int ohtsu(int NUM, const int *X) {
+  std::pair<const int *, const int *> MINMAX =
+      std::minmax_element(&X[0], &X[NUM]);
+  int MAX = *MINMAX.second;
+  int MIN = *MINMAX.first;
+  int NODEHANI = MAX - MIN + 1;
+  std::vector<int> HIST = Histogram(X, NUM, MIN, NODEHANI);
 
   float MAX2 = 0.0;
   float AVE1, AVE2;
   int TOTAL1, TOTAL2;
   float HANTEI;
   int THRESH;
-  for (i = 1; i < NODEHANI; i++) {
+  for (int i = 1; i < NODEHANI; i++) {
     AVE1 = 0.0;
     TOTAL1 = 0;
-    for (j = 0; j < i; j++) {
-      AVE1 += (*(HIST + j)) * (j + MIN);
-      TOTAL1 += (*(HIST + j));
+    for (int j = 0; j < i; j++) {
+      AVE1 += HIST[j] * (j + MIN);
+      TOTAL1 += HIST[j];
     }
     AVE1 /= (float)(TOTAL1);
     AVE2 = 0.0;
     TOTAL2 = 0;
-    for (j = i; j < NODEHANI; j++) {
-      AVE2 += (*(HIST + j)) * (j + MIN);
-      TOTAL2 += (*(HIST + j));
+    for (int j = i; j < NODEHANI; j++) {
+      AVE2 += HIST[j] * (j + MIN);
+      TOTAL2 += HIST[j];
     }
     AVE2 /= (float)(TOTAL2);
 
@@ -444,14 +417,12 @@ int ohtsu(int NUM, int *X) {
     }
   }
   THRESH += MIN;
-  // debug start
-  // fprintf(stderr,"THRE=%d",THRESH);
-  // debug end
+
   return (THRESH);
-  // return (0);
 } // main kansuu end
 
-int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh) {
+int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
+           int omh) {
   int i, j;
   // NUM=7;
   // omh=3;
@@ -477,16 +448,10 @@ int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh) {
   // 10,10,10,10,10,
   // 10,10,10,10,10};
   // printf("OHTSU2 START!!\n");
-  double MAX = -10000.0e32;
-  double MIN = 99999.0e32;
-  for (i = 0; i < NUM; i++) {
-    if (MIN > *(X + i)) {
-      MIN = *(X + i);
-    }
-    if (MAX < *(X + i)) {
-      MAX = *(X + i);
-    }
-  }
+  std::pair<const double *, const double *> MINMAX =
+      std::minmax_element(&X[0], &X[NUM]);
+  double MAX = *MINMAX.second;
+  double MIN = *MINMAX.first;
   int CMAX, CMIN;
 
   if (MAX > 0.0) {
@@ -508,8 +473,7 @@ int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh) {
     }
   }
 
-  int NODEHANI;
-  NODEHANI = CMAX - CMIN + 1;
+  int NODEHANI = CMAX - CMIN + 1;
   // int *HIST;
   // HIST = (int *)malloc(sizeof(int)*NODEHANI);
   // ND
@@ -642,7 +606,7 @@ int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh) {
   return (0);
 } // main kansuu end
 
-int media(int NUM, int *X) {
+int media(int NUM, const int *X) {
   int i, j;
   // int SUM1;
   // int X[NUM] = {-10,-10,-10,-10,-10,
@@ -652,45 +616,16 @@ int media(int NUM, int *X) {
   // 3,3,3,3,3,
   // 10,10,10,10,10,
   // 10,10,10,10,10};
-  int MAX = -10000;
-  int MIN = 99999;
-  for (i = 0; i < NUM; i++) {
-    if (MIN > *(X + i)) {
-      MIN = *(X + i);
-    }
-    if (MAX < *(X + i)) {
-      MAX = *(X + i);
-    }
-  }
-  int NODEHANI;
-  NODEHANI = MAX - MIN + 1;
-  int *HIST;
-  HIST = (int *)malloc(sizeof(int) * NODEHANI);
-  // ND
-  // 0- -11
-  // 1- -10
-
-  // 11- 0
-
-  // 22- 11
-  for (i = 0; i < NODEHANI; i++) {
-    *(HIST + i) = 0;
-  }
-  int TMP;
-  for (i = 0; i < NUM; i++) {
-    TMP = *(X + i) - MIN;
-    (*(HIST + TMP))++;
-  }
-  // debug start
-  // for(i=0;i<NODEHANI;i++){
-  // fprintf(stderr,"NUM ATAI HIST %d %d %d\n",i,i+MIN,*(HIST+i));
-  //}
-  // while(1);
-  // debug end
+  std::pair<const int *, const int *> MINMAX =
+      std::minmax_element(&X[0], &X[NUM]);
+  int MAX = *MINMAX.second;
+  int MIN = *MINMAX.first;
+  int NODEHANI = MAX - MIN + 1;
+  std::vector<int> HIST = Histogram(X, NUM, MIN, NODEHANI);
   int GOUKEI, MED;
   GOUKEI = 0;
   for (i = 0; i < NODEHANI; i++) {
-    GOUKEI += *(HIST + i);
+    GOUKEI += HIST[i];
     if (NUM / 2 < GOUKEI) {
       MED = i - 1;
       break;
@@ -712,15 +647,15 @@ int media(int NUM, int *X) {
     AVE1 = 0.0;
     TOTAL1 = 0;
     for (j = 0; j < i; j++) {
-      AVE1 += (*(HIST + j)) * (j + MIN);
-      TOTAL1 += (*(HIST + j));
+      AVE1 += HIST[j] * (j + MIN);
+      TOTAL1 += HIST[j];
     }
     AVE1 /= (float)(TOTAL1);
     AVE2 = 0.0;
     TOTAL2 = 0;
     for (j = i; j < NODEHANI; j++) {
-      AVE2 += (*(HIST + j)) * (j + MIN);
-      TOTAL2 += (*(HIST + j));
+      AVE2 += HIST[j] * (j + MIN);
+      TOTAL2 += HIST[j];
     }
     AVE2 /= (float)(TOTAL2);
 
@@ -796,6 +731,3 @@ void kaiten(double V[3], double X, double Y, double Z, double *R, double *G,
   *G = G1;
   *B = B1;
 }
-
-//#include "mediancut.cpp"
-//#include "main.cpp"

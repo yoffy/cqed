@@ -21,9 +21,9 @@ void LuvtoRGB(double L, double u, double v, double *R, double *G, double *B);
 void RGBtoLuv(double R, double G, double B, double *L, double *u, double *v);
 void LABtoRGB(double L, double a, double b, double *R, double *G, double *B);
 void RGBtoLAB(double R, double G, double B, double *L, double *a, double *b);
-int ohtsu(int NUM, int *X);
-int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh);
-int media(int NUM, int *X);
+int ohtsu(int NUM, const int *X);
+int ohtsu2(int NUM, const double *X, const double *Y, const double *Z, int omh);
+int media(int NUM, const int *X);
 void modoshi(double V[3], double R, double G, double B, double *X, double *Y,
              double *Z);
 void kaiten(double V[3], double X, double Y, double Z, double *R, double *G,
