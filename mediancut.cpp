@@ -782,7 +782,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
             (float)HHEDGEG[j * vsize + i] * (float)HHEDGEG[j * vsize + i] +
             (float)VVEDGEG[j * vsize + i] *
                 (float)VVEDGEG[j * vsize + i]) /*/ 4.0 / sqrt(2.0)*/;
-        REDGE = /*sqrt*/ (
+        BEDGE = /*sqrt*/ (
             (float)HHEDGEB[j * vsize + i] * (float)HHEDGEB[j * vsize + i] +
             (float)VVEDGEB[j * vsize + i] *
                 (float)VVEDGEB[j * vsize + i]) /*/ 4.0 / sqrt(2.0)*/;
