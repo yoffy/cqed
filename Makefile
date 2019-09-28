@@ -1,4 +1,4 @@
-CXXFLAGS=-g -Wall -Wextra
+CXXFLAGS=-g -Wall -Wextra -O3 -march=native
 TARGET=cqed
 OBJS=mediancut_util.o \
 	 mediancut.o \
