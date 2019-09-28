@@ -875,7 +875,7 @@ int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh) {
   } else if (omh == 4) {
     return (THRESH2);
   }
-  // return (0);
+  return (0);
 } // main kansuu end
 
 int media(int NUM, int *X) {
