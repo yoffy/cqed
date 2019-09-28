@@ -1,3 +1,4 @@
+CXXFLAGS=-g -Wall -Wextra
 TARGET=cqed
 OBJS=main_6_34.o
 
@@ -9,4 +10,4 @@ clean:
 	$(RM) $(TARGET) *.o
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ $^
+	$(CXX) -g -o $@ $^
