@@ -57,10 +57,10 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                             // unsigned char *BOUT)
 {
   int DIVIDENUM;
-  //int RDIV;
-  //int GDIV;
-  //int BDIV;
-  int j, k, l, m, n, p;
+  // int RDIV;
+  // int GDIV;
+  // int BDIV;
+  int k, l, m, n, p;
   int MEN;
   int NMEN;
   int NUM;
@@ -115,7 +115,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     double koi;
     koi = (1.0 - lpfk) / 2.0;
     for (int i = 0; i < vsize; i++) {
-      for (j = 0; j < hsize; j++) {
+      for (int j = 0; j < hsize; j++) {
         if ((j >= 1) && (j <= (hsize - 2))) {
           YIN[j * vsize + i] = lpfk * (double)RIN[j * vsize + i] +
                                koi * (double)RIN[(j - 1) * vsize + i] +
@@ -132,7 +132,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
     //    while(1);
     for (int i = 0; i < hsize; i++) {
-      for (j = 0; j < vsize; j++) {
+      for (int j = 0; j < vsize; j++) {
         if ((j >= 1) && (j <= (vsize - 2))) {
           RIN[i * vsize + j] =
               (unsigned char)(lpfk * (double)YIN[i * vsize + j] +
@@ -189,17 +189,26 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   IRO_THIETA *= PI / 180;
   if (cs == 0) {
     for (int i = 0; i < hsize * vsize; i++) {
-      *(YIN + i) = *(GgIN + i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
-                                ///*+ 0.5*/);
-      *(UIN + i) = *(BbIN + i); //((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
-                                //+ 128.0);
-      *(VIN + i) = *(RrIN + i); //(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
-                                //+ 128.0);
+      *(YIN + i) = *(
+          GgIN +
+          i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+              ///*+ 0.5*/);
+      *(UIN + i) = *(
+          BbIN +
+          i); //((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
+              //+ 128.0);
+      *(VIN + i) = *(
+          RrIN +
+          i); //(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
+              //+ 128.0);
     }
   } else if (cs == 1) {
     for (int i = 0; i < hsize * vsize; i++) {
-      RGBtoLAB(RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i, UIN + i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
-                                                                      //+ 0.5);
+      RGBtoLAB(
+          RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i,
+          UIN +
+              i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+                  //+ 0.5);
       //*(UIN+i) =
       //*(BIN+i);//((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
       //+ 128.5);
@@ -209,8 +218,11 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
   } else if (cs == 2) {
     for (int i = 0; i < hsize * vsize; i++) {
-      RGBtoLuv(RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i, UIN + i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
-                                                                      //+ 0.5);
+      RGBtoLuv(
+          RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i,
+          UIN +
+              i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+                  //+ 0.5);
       //*(UIN+i) =
       //*(BIN+i);//((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
       //+ 128.5);
@@ -302,12 +314,18 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                  255.0 / (1.0 + exp(-aaaa * (-127.5)))) *
                 255.0 / (255.0 - 2.0 * 255.0 / (1.0 + exp(-aaaa * (-127.5))));
 
-      *(YIN + i) = *(GgIN + i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
-                                ///*+ 0.5*/);
-      *(UIN + i) = *(BbIN + i); //((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
-                                //+ 128.0);
-      *(VIN + i) = *(RrIN + i); //(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
-                                //+ 128.0);
+      *(YIN + i) = *(
+          GgIN +
+          i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+              ///*+ 0.5*/);
+      *(UIN + i) = *(
+          BbIN +
+          i); //((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
+              //+ 128.0);
+      *(VIN + i) = *(
+          RrIN +
+          i); //(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
+              //+ 128.0);
     }
   } else if (cs == 7) {
     for (int i = 0; i < hsize * vsize; i++) {
@@ -378,9 +396,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
       //*(YIN+i) = GgIN[i];
       //*(UIN+i) =
-      //BbIN[i];//((-0.1350*(float)(*(RrIN+i))-0.2650*(float)(*(GgIN+i))+0.40000*(float)(*(BbIN+i))));
+      // BbIN[i];//((-0.1350*(float)(*(RrIN+i))-0.2650*(float)(*(GgIN+i))+0.40000*(float)(*(BbIN+i))));
       //*(VIN+i) =
-      //RrIN[i];//(0.4000*(float)(*(RrIN+i))-0.3346*(float)(*(GgIN+i))-0.0653*(float)(*(BbIN+i)));
+      // RrIN[i];//(0.4000*(float)(*(RrIN+i))-0.3346*(float)(*(GgIN+i))-0.0653*(float)(*(BbIN+i)));
     }
   }
   double *KARIU, *KARIV;
@@ -485,11 +503,11 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   if (vvv == 3 || vvv == 4 || vvv == 5) {
     for (int i = 0; i < vsize; i++) {   // suityoku
-      for (j = 0; j < hsize; j++) { // suihei
-        for (k = 0; k < 3; k++) {   // suityoku
-          for (l = 0; l < 3; l++) { // suihei
-            m = i + k - 1;          //-1~1suiityoku
-            n = j + l - 1;          //-1~1suihei
+      for (int j = 0; j < hsize; j++) { // suihei
+        for (k = 0; k < 3; k++) {       // suityoku
+          for (l = 0; l < 3; l++) {     // suihei
+            m = i + k - 1;              //-1~1suiityoku
+            n = j + l - 1;              //-1~1suihei
             if (n < 0) {
               n = -n;
             }
@@ -523,7 +541,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   if ((vvv >= 0 && vvv <= 2) || vvv == 6) {
     for (int i = 0; i < vsize; i++) {
-      for (j = 0; j < hsize; j++) {
+      for (int j = 0; j < hsize; j++) {
         k = j - 1;
         l = j + 1;
         if (k < 0) {
@@ -572,7 +590,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
 
     for (int i = 0; i < hsize; i++) {
-      for (j = 0; j < vsize; j++) {
+      for (int j = 0; j < vsize; j++) {
         k = j - 1;
         l = j + 1;
         if (k < 0) {
@@ -616,7 +634,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
     k = 0;
     for (int i = 0; i < vsize; i++) {
-      for (j = 0; j < hsize; j++) {
+      for (int j = 0; j < hsize; j++) {
         if (vvv == 0) {
           if ((sqrt((float)HHEDGER[j * vsize + i] *
                         (float)HHEDGER[j * vsize + i] +
@@ -683,7 +701,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   if (vvv == 3 || vvv == 5) {
     k = 0;
     for (int i = 0; i < vsize; i++) {
-      for (j = 0; j < hsize; j++) {
+      for (int j = 0; j < hsize; j++) {
         // printf("%f\n",sqrt((float)HHEDGER[j*vsize+i]*(float)HHEDGER[j*vsize+i]
         // + (float)VVEDGER[j*vsize+i] * (float)VVEDGER[j*vsize+i]));
         // printf("%f\n",sqrt((float)HHEDGEG[j*vsize+i]*(float)HHEDGEG[j*vsize+i]
@@ -774,7 +792,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
     //    EDGERASMAX = -9999999.9e64;
     for (int i = 0; i < vsize; i++) {
-      for (j = 0; j < hsize; j++) {
+      for (int j = 0; j < hsize; j++) {
         *(index3 + j * vsize + i) = 1;
         REDGE = /*sqrt*/ (
             (float)HHEDGER[j * vsize + i] * (float)HHEDGER[j * vsize + i] +
@@ -1623,20 +1641,21 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   //分轄の中の画素数が多いものを分轄
   // if(PT[MEN][0].INDEXNUM >= PT[MEN][1].INDEXNUM){
 
+  int j2 = 0;
   if ((bun == 1) || (bun == 2) || (bun == 3) || (bun == 4) || (bun == 5)) {
     if (PT[MEN][0].MAXDISTANCE /**PT[MEN][0].INDEXNUM*/ >=
         PT[MEN][1]
             .MAXDISTANCE /**PT[MEN][1].INDEXNUM*/) { // maxdistance div tuika
-      j = 0;                                         // INDEXNO
+      j2 = 0;                                        // INDEXNO
     } else {
-      j = 1;
+      j2 = 1;
     }
   } else if (bun == 0) {
     if (PT[MEN][0].MAXDISTANCE * PT[MEN][0].INDEXNUM >=
         PT[MEN][1].MAXDISTANCE * PT[MEN][1].INDEXNUM) { // maxdistance div tuika
-      j = 0;                                            // INDEXNO
+      j2 = 0;                                           // INDEXNO
     } else {
-      j = 1;
+      j2 = 1;
     }
   }
 
@@ -1644,16 +1663,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   U_G = 0.0;
   U_B = 0.0;
   for (int i = 0; i < hsize * vsize; i++) {
-    if ((*(INDEX + i)) == j) {
+    if ((*(INDEX + i)) == j2) {
       U_R += *(YIN + i);
       U_G += *(UIN + i);
       U_B += *(VIN + i);
     }
   }
 
-  U_R /= (double)PT[MEN][j].INDEXNUM;
-  U_G /= (double)PT[MEN][j].INDEXNUM;
-  U_B /= (double)PT[MEN][j].INDEXNUM;
+  U_R /= (double)PT[MEN][j2].INDEXNUM;
+  U_G /= (double)PT[MEN][j2].INDEXNUM;
+  U_B /= (double)PT[MEN][j2].INDEXNUM;
   // U_R = (U_R>>RDIV);
   // U_G = (U_G>>GDIV);
   // U_B = (U_B>>BDIV);
@@ -1667,7 +1686,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   TMP_RB = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
   TMP_GB = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
   for (int i = 0; i < hsize * vsize; i++) {
-    if ((*(INDEX + i)) == j) {
+    if ((*(INDEX + i)) == j2) {
       TMP_RR += (double)((((*(YIN + i))) - U_R) * (((*(YIN + i))) - U_R));
       TMP_GG += (double)((((*(UIN + i))) - U_G) * (((*(UIN + i))) - U_G));
       TMP_BB += (double)((((*(VIN + i))) - U_B) * (((*(VIN + i))) - U_B));
@@ -1676,12 +1695,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       TMP_GB += (double)((((*(UIN + i))) - U_G) * (((*(VIN + i))) - U_B));
     }
   }
-  TMP_RR /= (double)(PT[MEN][j].INDEXNUM);
-  TMP_GG /= (double)(PT[MEN][j].INDEXNUM);
-  TMP_BB /= (double)(PT[MEN][j].INDEXNUM);
-  TMP_RG /= (double)(PT[MEN][j].INDEXNUM);
-  TMP_RB /= (double)(PT[MEN][j].INDEXNUM);
-  TMP_GB /= (double)(PT[MEN][j].INDEXNUM);
+  TMP_RR /= (double)(PT[MEN][j2].INDEXNUM);
+  TMP_GG /= (double)(PT[MEN][j2].INDEXNUM);
+  TMP_BB /= (double)(PT[MEN][j2].INDEXNUM);
+  TMP_RG /= (double)(PT[MEN][j2].INDEXNUM);
+  TMP_RB /= (double)(PT[MEN][j2].INDEXNUM);
+  TMP_GB /= (double)(PT[MEN][j2].INDEXNUM);
 
   // 2番目の分轄の軸を求める（固有ベクトルの計算）
   A[0][0] = TMP_RR;
@@ -1722,7 +1741,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   // ohtsu tuika start
   for (int i = 0; i < hsize * vsize; i++) {
-    if ((*(INDEX + i)) == j) {
+    if ((*(INDEX + i)) == j2) {
       *(RR + i) = (double)(((*(YIN + i))) - U_R);
       *(GG + i) = (double)(((*(UIN + i))) - U_G);
       *(BB + i) = (double)(((*(VIN + i))) - U_B);
@@ -1732,17 +1751,17 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   V[1] = X1[1][Y];
   V[2] = X1[2][Y];
   for (int i = 0; i < hsize * vsize; i++) {
-    if ((*(INDEX + i)) == j) {
+    if ((*(INDEX + i)) == j2) {
       kaiten(V, *(RR + i), *(GG + i), *(BB + i), RRR + i, GGG + i, BBB + i);
     }
   }
-  GASOSUU = PT[MEN][j].INDEXNUM;
+  GASOSUU = PT[MEN][j2].INDEXNUM;
   for (int i = 0; i < hsize * vsize; i++) {
     *(RRR33 + i) = (double)(*(RRR + i));
   }
   k = 0;
   for (int i = 0; i < hsize * vsize; i++) {
-    if ((*(INDEX + i)) == j) {
+    if ((*(INDEX + i)) == j2) {
       *(RR + k) = (double)(*(RRR + i));
       *(GG + k) = (double)(*(GGG + i));
       *(BB + k) = (double)(*(BBB + i));
@@ -1776,7 +1795,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   int k3 = 0, l3 = 0;
   for (int i = 0; i < hsize * vsize; i++) {
-    if ((*(INDEX + i)) == j) {
+    if ((*(INDEX + i)) == j2) {
       // ZZ = X1[0][Y]*((double)(((*(YIN+i)))) - ((double)(U_R)+(*XXX))) +
       // X1[1][Y]*((double)(((*(UIN+i)))) - ((double)(U_G)+(*YYY))) +
       // X1[2][Y]*((double)(((*(VIN+i)))) - ((double)(U_B)+(*ZZZ))) ;
@@ -1790,7 +1809,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
     }
   }
-  PT[MEN][0].INDEXNO = j;
+  PT[MEN][0].INDEXNO = j2;
   PT[MEN][1].INDEXNO = DIVIDENUM - 1;
   PT[MEN][0].INDEXNUM = l3;
   PT[MEN][1].INDEXNUM = k3;
@@ -2255,7 +2274,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
   // max distance div end
 
-  if (j == 0) {
+  if (j2 == 0) {
     for (int i = 2; i <= DIVIDENUM - 1; i++) {
       PT[MEN][i].INDEXNO = PT[NMEN][i - 1].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 1].INDEXNUM;
@@ -2263,8 +2282,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           PT[NMEN][i - 1].MAXDISTANCE; // max distance div tuika
     }
   }
-  if ((j >= 1) && (j <= (DIVIDENUM - 3))) {
-    for (int i = 2; i <= j + 1; i++) {
+  if ((j2 >= 1) && (j2 <= (DIVIDENUM - 3))) {
+    for (int i = 2; i <= j2 + 1; i++) {
       //// i i-2
       PT[MEN][i].INDEXNO = PT[NMEN][i - 2].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 2].INDEXNUM;
@@ -2272,7 +2291,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           PT[NMEN][i - 2].MAXDISTANCE; // max distance div tuika
     }
 
-    for (int i = j + 2; i <= DIVIDENUM - 1; i++) {
+    for (int i = j2 + 2; i <= DIVIDENUM - 1; i++) {
       //// i i-1
       PT[MEN][i].INDEXNO = PT[NMEN][i - 1].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 1].INDEXNUM;
@@ -2280,8 +2299,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           PT[NMEN][i - 1].MAXDISTANCE; // max distance div tuika
     }
   }
-  if (j == (DIVIDENUM - 2)) {
-    for (int i = 2; i <= j + 1; i++) {
+  if (j2 == (DIVIDENUM - 2)) {
+    for (int i = 2; i <= j2 + 1; i++) {
       //// i i-2
       PT[MEN][i].INDEXNO = PT[NMEN][i - 2].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 2].INDEXNUM;
@@ -2384,7 +2403,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // debug start
     if (DIVIDENUM == 41) {
       for (int i = 0; i < 3; i++) {
-        for (j = 0; j < 3; j++) {
+        for (int j = 0; j < 3; j++) {
           fprintf(stderr, "%f ", A[i][j]);
         }
         fprintf(stderr, "\n");
@@ -3031,7 +3050,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   for (int i = 0; i < hsize * vsize; i++) {
 
     if (index3[i] != -1) {
-      for (j = 0; j < IROSUU; j++) {
+      for (int j = 0; j < IROSUU; j++) {
         if ((*(INDEX + i)) == j) {
           Y_JYUSHIN[j] += *(YIN + i);
           U_JYUSHIN[j] += *(UIN + i);
@@ -3084,7 +3103,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       for (int i = 0; i < hsize * vsize; i++) {
         if (index3[i] != -1) {
           MINZ = 60e60;
-          for (j = 0; j < IROSUU; j++) {
+          for (int j = 0; j < IROSUU; j++) {
             Z[j] = ((((*(YIN + i)))) - Y_JYUSHIN[j]) *
                        ((((*(YIN + i)))) - Y_JYUSHIN[j]) +
                    ((((*(UIN + i)))) - U_JYUSHIN[j]) *
@@ -3092,7 +3111,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                    ((((*(VIN + i)))) - V_JYUSHIN[j]) *
                        ((((*(VIN + i)))) - V_JYUSHIN[j]);
           }
-          for (j = 0; j < IROSUU; j++) {
+          for (int j = 0; j < IROSUU; j++) {
             if (Z[j] < MINZ) {
               MINZ = Z[j];
               X = j;
@@ -3123,7 +3142,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         SUM_G[i] = 0.0;
         SUM_B[i] = 0.0;
       }
-      for (j = 0; j < IROSUU; j++) {
+      for (int j = 0; j < IROSUU; j++) {
         k = 0;
         for (int i = 0; i < hsize * vsize; i++) {
           if (index3[i] != -1) {
@@ -3944,7 +3963,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   for (int i = 0; i < hsize * vsize; i++) {
     // if(index3[i]!=-1){
     MINZ = 60e60;
-    for (j = 0; j < IROSUU; j++) {
+    for (int j = 0; j < IROSUU; j++) {
       Z[j] =
           ((((*(YIN + i)))) - Y_JYUSHIN[j]) *
               ((((*(YIN + i)))) - Y_JYUSHIN[j]) +
@@ -3952,7 +3971,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
               ((((*(UIN + i)))) - U_JYUSHIN[j]) +
           ((((*(VIN + i)))) - V_JYUSHIN[j]) * ((((*(VIN + i)))) - V_JYUSHIN[j]);
     }
-    for (j = 0; j < IROSUU; j++) {
+    for (int j = 0; j < IROSUU; j++) {
       if (Z[j] < MINZ) {
         MINZ = Z[j];
         X = j;
@@ -4124,10 +4143,10 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // IREDUCE_B[i] =
     // (int)((((float)(Y_JYUSHIN[i])*1.0000000115762946)+2.213731098385467*((float)(U_JYUSHIN[i]))-0.00011576294529099052*((float)(V_JYUSHIN[i])))+0.5);
     ////            RR=
-    ///n1*0.9998247134019967+n2*-0.000044452970991771824+n3* 1.7528659800326482;
+    /// n1*0.9998247134019967+n2*-0.000044452970991771824+n3* 1.7528659800326482;
     ////            GG= n1*1.0000893144198046+n2*-0.4320813565838843+
-    ///n3*-0.89314419804726; /            BB=
-    ///n1*1.0000000115762946+n2* 2.213731098385467+ n3*-0.00011576294529099052;
+    /// n3*-0.89314419804726; /            BB=
+    /// n1*1.0000000115762946+n2* 2.213731098385467+ n3*-0.00011576294529099052;
     //}
     //}
   } else if (cs == 4) {
@@ -4759,7 +4778,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         // (*(IIBIN+x*vsize+y)) = (int)(REDUCE_B[*(PALETGAZOU+x*vsize+y)]);
       }
       if (dither == 0 || dither == 1) {
-        for (j = 0; j < mx; j++) {
+        for (int j = 0; j < mx; j++) {
           *(errorR + j) = *(errorR + j + mx);
           *(errorG + j) = *(errorG + j + mx);
           *(errorB + j) = *(errorB + j + mx);
@@ -4768,7 +4787,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           *(errorB + j + mx) = 0.0;
         }
       } else if (dither == 2 || dither == 3) {
-        for (j = 0; j < mx; j++) {
+        for (int j = 0; j < mx; j++) {
           *(errorR + j) = *(errorR + j + mx);
           *(errorG + j) = *(errorG + j + mx);
           *(errorB + j) = *(errorB + j + mx);
@@ -4786,7 +4805,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // IIRINに画像データがはいっている
 
     for (int i = 0; i < hsize * vsize; i++) {
-      for (j = 0; j < IROSUU; j++) {
+      for (int j = 0; j < IROSUU; j++) {
         if (((*(IIRIN + i)) == (REDUCE_R[j])) &&
             ((*(IIGIN + i)) == (REDUCE_G[j])) &&
             ((*(IIBIN + i)) == (REDUCE_B[j]))) {
@@ -5067,7 +5086,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         // (*(IIBIN+x*vsize+y)) = (int)(REDUCE_B[*(PALETGAZOU+x*vsize+y)]);
       }
       if (dither == 0 || dither == 1) {
-        for (j = 0; j < mx; j++) {
+        for (int j = 0; j < mx; j++) {
           *(errorR + j) = *(errorR + j + mx);
           *(errorG + j) = *(errorG + j + mx);
           *(errorB + j) = *(errorB + j + mx);
@@ -5076,7 +5095,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           *(errorB + j + mx) = 0.0;
         }
       } else if (dither == 2 || dither == 3) {
-        for (j = 0; j < mx; j++) {
+        for (int j = 0; j < mx; j++) {
           *(errorR + j) = *(errorR + j + mx);
           *(errorG + j) = *(errorG + j + mx);
           *(errorB + j) = *(errorB + j + mx);
@@ -5094,7 +5113,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // IIRINに画像データがはいっている
 
     for (int i = 0; i < hsize * vsize; i++) {
-      for (j = 0; j < IROSUU; j++) {
+      for (int j = 0; j < IROSUU; j++) {
         if (((int)((*(IIRIN + i)) /* *65384.0*/) ==
              (int)((V_JYUSHIN1[j]) /* *65384.0*/)) &&
             ((int)((*(IIGIN + i)) /* *65384.0*/) ==
