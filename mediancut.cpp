@@ -60,7 +60,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // int RDIV;
   // int GDIV;
   // int BDIV;
-  int k, m, n, p;
+  int m, n, p;
   int MEN;
   int NMEN;
   int NUM;
@@ -501,10 +501,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   int SOBEL[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
   int SOBEL2[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
 
+  int EDGE_GASOSUU = 0;
+
   if (vvv == 3 || vvv == 4 || vvv == 5) {
     for (int i = 0; i < vsize; i++) {   // suityoku
       for (int j = 0; j < hsize; j++) { // suihei
-        for (k = 0; k < 3; k++) {       // suityoku
+        for (int k = 0; k < 3; k++) {   // suityoku
           for (int l = 0; l < 3; l++) { // suihei
             m = i + k - 1;              //-1~1suiityoku
             n = j + l - 1;              //-1~1suihei
@@ -632,7 +634,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
     }
 
-    k = 0;
     for (int i = 0; i < vsize; i++) {
       for (int j = 0; j < hsize; j++) {
         if (vvv == 0) {
@@ -649,7 +650,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                     (float)VVEDGEB[j * vsize + i] *
                         (float)VVEDGEB[j * vsize + i]) >= et * sqrt(2.0))) {
             *(index3 + j * vsize + i) = -1;
-            k++;
+            EDGE_GASOSUU++;
           } else {
             *(index3 + j * vsize + i) = 1;
           }
@@ -668,7 +669,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                      (float)VVEDGEB[j * vsize + i] *
                          (float)VVEDGEB[j * vsize + i]))) >= et * sqrt(6.0)) {
             *(index3 + j * vsize + i) = -1;
-            k++;
+            EDGE_GASOSUU++;
           } else {
             *(index3 + j * vsize + i) = 1;
           }
@@ -678,7 +679,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
               HHEDGEG[j * vsize + i] >= et || VVEDGEG[j * vsize + i] >= et ||
               HHEDGEB[j * vsize + i] >= et || VVEDGEB[j * vsize + i] >= et) {
             *(index3 + j * vsize + i) = -1;
-            k++;
+            EDGE_GASOSUU++;
           } else {
             *(index3 + j * vsize + i) = 1;
           }
@@ -688,7 +689,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
               EDGEB[j * vsize + i] == 1 || VEDGER[j * vsize + i] == 1 ||
               VEDGEG[j * vsize + i] == 1 || VEDGEB[j * vsize + i] == 1) {
             *(index3 + j * vsize + i) = -1;
-            k++;
+            EDGE_GASOSUU++;
           } else {
             *(index3 + j * vsize + i) = 1;
           }
@@ -699,7 +700,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   } // cnt if end
 
   if (vvv == 3 || vvv == 5) {
-    k = 0;
     for (int i = 0; i < vsize; i++) {
       for (int j = 0; j < hsize; j++) {
         // printf("%f\n",sqrt((float)HHEDGER[j*vsize+i]*(float)HHEDGER[j*vsize+i]
@@ -726,7 +726,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                         (float)VVEDGEB[j * vsize + i]) >=
                et * 4.0 * sqrt(2.0))) {
             *(index3 + j * vsize + i) = -1;
-            k++;
+            EDGE_GASOSUU++;
           } else {
             *(index3 + j * vsize + i) = 1;
           }
@@ -755,7 +755,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                         (float)VVEDGEB[j * vsize + i])) >=
               et * 4.0 * sqrt(6.0)) {
             *(index3 + j * vsize + i) = -1;
-            k++;
+            EDGE_GASOSUU++;
           } else {
             *(index3 + j * vsize + i) = 1;
           }
@@ -816,15 +816,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
     }
     //    printf("EDGERASMAX=%f\n",EDGERASMAX);while(1);
-
-    k = 0;
   }
 
   // debug start]
   // if(vvv == 4){
   //    printf("EDGE rasisa mode\n");
   //} else {
-  printf("EDGE gasosuu=%d\n", k);
+  printf("EDGE gasosuu=%d\n", EDGE_GASOSUU);
   //}
   // debug end
 
@@ -955,9 +953,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       U_B += *(VIN + i);
     }
   }
-  U_R /= (double)(hsize * vsize - k);
-  U_G /= (double)(hsize * vsize - k);
-  U_B /= (double)(hsize * vsize - k);
+  U_R /= (double)(hsize * vsize - EDGE_GASOSUU);
+  U_G /= (double)(hsize * vsize - EDGE_GASOSUU);
+  U_B /= (double)(hsize * vsize - EDGE_GASOSUU);
   // U_R = (U_R>>RDIV);
   // U_G = (U_G>>GDIV);
   // U_B = (U_B>>BDIV);
@@ -998,12 +996,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // fprintf(stderr,"BUNSAN=%f %f\n",TMP_RR,TMP_RB);
   // while(1);
   // debug end
-  TMP_RR /= (double)(hsize * vsize - k);
-  TMP_GG /= (double)(hsize * vsize - k);
-  TMP_BB /= (double)(hsize * vsize - k);
-  TMP_RG /= (double)(hsize * vsize - k);
-  TMP_RB /= (double)(hsize * vsize - k);
-  TMP_GB /= (double)(hsize * vsize - k);
+  TMP_RR /= (double)(hsize * vsize - EDGE_GASOSUU);
+  TMP_GG /= (double)(hsize * vsize - EDGE_GASOSUU);
+  TMP_BB /= (double)(hsize * vsize - EDGE_GASOSUU);
+  TMP_RG /= (double)(hsize * vsize - EDGE_GASOSUU);
+  TMP_RB /= (double)(hsize * vsize - EDGE_GASOSUU);
+  TMP_GB /= (double)(hsize * vsize - EDGE_GASOSUU);
   // debug start
   // fprintf(stderr,"BUNSAN=%f %f\n",TMP_RR,TMP_RB);
   // while(1);
@@ -1096,7 +1094,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
 
   double *RRRRRR, *GGGGGG, *BBBBBB;
-  int GASOSUU = hsize * vsize - k;
+  int GASOSUU = hsize * vsize - EDGE_GASOSUU;
   if (omh == 3 || omh == 4) {
 
     RRRRRR = (double *)malloc(sizeof(double) * hsize * vsize);
@@ -1757,8 +1755,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   for (int i = 0; i < hsize * vsize; i++) {
     *(RRR33 + i) = (double)(*(RRR + i));
   }
-  k = 0;
-  for (int i = 0; i < hsize * vsize; i++) {
+  for (int i = 0, k = 0; i < hsize * vsize; i++) {
     if ((*(INDEX + i)) == j2) {
       *(RR + k) = (double)(*(RRR + i));
       *(GG + k) = (double)(*(GGG + i));
@@ -2456,8 +2453,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     for (int i = 0; i < hsize * vsize; i++) {
       *(RRR33 + i) = (double)(*(RRR + i));
     }
-    k = 0;
-    for (int i = 0; i < hsize * vsize; i++) {
+    for (int i = 0, k = 0; i < hsize * vsize; i++) {
       if ((*(INDEX + i)) == PT[MEN][NUM].INDEXNO) {
         *(RR + k) = (double)(*(RRR + i));
         *(GG + k) = (double)(*(GGG + i));
@@ -3067,7 +3063,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   printf("palet sou gasosuu=%d\n", y);
 
   for (m = 0; m < IROSUU; m++) {
-    k = PT[MEN][m].INDEXNO;
+    int k = PT[MEN][m].INDEXNO;
     if (PT[MEN][m].INDEXNUM != 0) {
       Y_JYUSHIN[k] /= (double)PT[MEN][m].INDEXNUM;
       U_JYUSHIN[k] /= (double)PT[MEN][m].INDEXNUM;
@@ -3141,7 +3137,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         SUM_B[i] = 0.0;
       }
       for (int j = 0; j < IROSUU; j++) {
-        k = 0;
+        int k = 0;
         for (int i = 0; i < hsize * vsize; i++) {
           if (index3[i] != -1) {
             if ((*(PALETGAZOU + i)) == j) {
