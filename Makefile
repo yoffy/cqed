@@ -9,3 +9,4 @@ clean:
 	$(RM) $(TARGET) *.o
 
 $(TARGET): $(OBJS)
+	$(CXX) -o $@ $^
