@@ -57,10 +57,10 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                             // unsigned char *BOUT)
 {
   int DIVIDENUM;
-  int RDIV;
-  int GDIV;
-  int BDIV;
-  int i, j, k, l, m, n, o, p;
+  //int RDIV;
+  //int GDIV;
+  //int BDIV;
+  int i, j, k, l, m, n, p;
   int MEN;
   int NMEN;
   int NUM;
@@ -78,7 +78,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   double HEIKIN_G[IROSUU];
   double HEIKIN_B[IROSUU];
   double **A, **A1, **A2, **X1, **X2, eps;
-  int i1, i2, ind, ct;
+  int i1, ind, ct;
   double TMP_RR;
   double TMP_GG;
   double TMP_BB;
@@ -87,20 +87,11 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   double TMP_GB;
   double IGENMAX;
   int Y;
-  double ZZ;
   int *INDEX;
   double U_R;
   double U_G;
   double U_B;
   double MAXINDEXNUM;
-  // int KARI;
-  int KARI1;
-  int KARI2;
-  int KARI3;
-  int KARI4;
-  int KARI5;
-  int KARI6;
-  int FLAG;
   double *YIN;
   double *UIN;
   double *VIN;
@@ -925,9 +916,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   DIVIDENUM = 1;
   MEN = 0;
-  RDIV = RD;
-  GDIV = GD;
-  BDIV = BD;
+  // RDIV = RD;
+  // GDIV = GD;
+  // BDIV = BD;
   if (MEN == 1) {
     NMEN = 0;
   } else {
@@ -1119,8 +1110,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   PT[MEN][1].INDEXNO = 1;
 
   INDEX = (int *)malloc(sizeof(int) * hsize * vsize);
-  int kk;
-  kk = k;
+  // int kk;
+  // kk = k;
   for (i = 0; i < hsize * vsize; i++) {
     *(INDEX + i) = -1;
   }
@@ -2288,7 +2279,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
   }
 
-  double MAXBUNSAN = 100.0;
   // 9/9 kokokara
   while (DIVIDENUM < 256) {
     //最大画素数のブロックをさがし、そのINDEXNOを調べる。
@@ -2317,8 +2307,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
     }
 
-    FLAG = 0;
-  label:
     // debug start
     if (DIVIDENUM == 41) {
       fprintf(stderr, "NUM= %d\n", NUM);
@@ -3070,7 +3058,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // REDUCE_B[i] = (unsigned char)(B_JYUSHIN[i]);
   // }
   // PALETGAZOU = (unsigned char*)malloc(sizeof(unsigned char)*hsize*vsize);
-  int s, q;
+  // int q;
+  int s;
   p = 0;
   s = 0;
   if (kmon == 1) {
@@ -3147,7 +3136,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
       if (l == 0) {
         if (s == 0) {
-          q = p + 50;
+          // q = p + 50;
           s = 1;
         }
       }

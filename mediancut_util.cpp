@@ -104,8 +104,7 @@ int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
 
 
 void LuvtoRGB(double L, double u, double v, double *R, double *G, double *B) {
-
-  double X, Y, Z, a, b, c, d, ud, vd, u0, v0, TEMP, L1;
+  double X, Y, Z, ud, vd, u0, v0, TEMP, L1;
   double RR, GG, BB;
   double eps = 216.0 / 24389.0;
   double k = 24389.0 / 27.0;
@@ -335,7 +334,7 @@ void RGBtoLAB(double R, double G, double B, double *L, double *a, double *b) {
   // Uses ITU-R recommendation BT.709 with D65 as reference white.
   // algorithm contributed by "Mark A. Ruzon" <ruzon@CS.Stanford.EDU>
 
-  double X, Y, Z, fX, fY, fZ, tempX, tempY, tempZ;
+  double X, Y, Z, tempX, tempY, tempZ;
   /*
   X = 0.412453*R + 0.357580*G + 0.180423*B;
   Y = 0.212671*R + 0.715160*G + 0.072169*B;
@@ -371,7 +370,7 @@ void RGBtoLAB(double R, double G, double B, double *L, double *a, double *b) {
 }
 
 int ohtsu(int NUM, int *X) {
-  int i, j, k, l, m, n, o, p;
+  int i, j;
   // int SUM1;
   // int X[NUM] = {-10,-10,-10,-10,-10,
   // -10,-10,-10,-10,-10,
@@ -453,7 +452,7 @@ int ohtsu(int NUM, int *X) {
 } // main kansuu end
 
 int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh) {
-  int i, j, k, l, m, n, o, p;
+  int i, j;
   // NUM=7;
   // omh=3;
 
@@ -644,7 +643,7 @@ int ohtsu2(int NUM, double *X, double *Y, double *Z, int omh) {
 } // main kansuu end
 
 int media(int NUM, int *X) {
-  int i, j, k, l, m, n, o, p;
+  int i, j;
   // int SUM1;
   // int X[NUM] = {-10,-10,-10,-10,-10,
   // -10,-10,-10,-10,-10,
@@ -745,9 +744,6 @@ klk:
 
 void modoshi(double V[3], double R, double G, double B, double *X, double *Y,
              double *Z) {
-  double THIETA, FAI;
-  double X1, Y1, Z1, KARI;
-  double PI = atan(1.0) * 4.0;
   double COSTHIETA, SINTHIETA, SQV1V2, ONEMINCOSTHIETA, NX, NY, NZ;
 
   SINTHIETA = -sqrt((V[1] * V[1] + V[2] * V[2]) /
@@ -773,8 +769,7 @@ void kaiten(double V[3], double X, double Y, double Z, double *R, double *G,
             double *B) {
   double SINTHIETA, COSTHIETA;
   double NX, NY, NZ;
-  double R1, G1, B1, KARI;
-  double PI = atan(1.0) * 4.0;
+  double R1, G1, B1;
   double SQV1V2, ONEMINCOSTHIETA;
   SINTHIETA = sqrt((V[1] * V[1] + V[2] * V[2]) /
                    (V[0] * V[0] + V[1] * V[1] + V[2] * V[2]));

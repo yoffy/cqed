@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
   unsigned char *B;
   unsigned char *G;
   unsigned char *R;
-  int i, j, k, l, m, n, o, p;
+  int i, j, k, l;
   unsigned char *BIN;
   unsigned char *GIN;
   unsigned char *RIN;
