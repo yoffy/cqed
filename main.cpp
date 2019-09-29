@@ -211,7 +211,7 @@ void option_set(int argc, char *argv[], CNTL *ptr) {
 int main(int argc, char *argv[]) {
   CNTL *cnt;
   char inputfile[128];
-  char outputfile[128];
+  char outputfile[128 - 4];
   FILE *fpr;
   FILE *fpw;
   int hsize;
@@ -379,7 +379,7 @@ int main(int argc, char *argv[]) {
   // debug start
   // for(;;);
   // debug end
-  sprintf(cnt->OutputFileName, "%s.bmp", outputfile);
+  snprintf(cnt->OutputFileName, sizeof(cnt->OutputFileName), "%s.bmp", outputfile);
   fpw = fopen(cnt->OutputFileName, "wb");
   // hsize = cnt->sizex;
   // vsize = cnt->sizey;

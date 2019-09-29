@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -392,7 +393,7 @@ int ohtsu(int NUM, const int *X) {
   float AVE1, AVE2;
   int TOTAL1, TOTAL2;
   float HANTEI;
-  int THRESH;
+  int THRESH = 0;
   for (int i = 1; i < NODEHANI; i++) {
     AVE1 = 0.0;
     TOTAL1 = 0;
@@ -423,6 +424,7 @@ int ohtsu(int NUM, const int *X) {
 
 int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
            int omh) {
+  assert(omh == 3 || omh == 4);
   // NUM=7;
   // omh=3;
 
@@ -504,7 +506,8 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
       BUNZ1, BUNZ2;
   int TOTAL1, TOTAL2;
   double HANTEI, HANTEI2;
-  int THRESH, THRESH2;
+  int THRESH = 0;
+  int THRESH2 = 0;
   // printf("CMIN=%d,CMAX=%d,NODEHANI=%d\n",CMIN,CMAX,NODEHANI);
   for (int i = 1; i < NODEHANI; i++) {
     // printf("i=%d\n",i);
@@ -620,8 +623,8 @@ int media(int NUM, const int *X) {
   int MIN = *MINMAX.first;
   int NODEHANI = MAX - MIN + 1;
   std::vector<int> HIST = Histogram(X, NUM, MIN, NODEHANI);
-  int GOUKEI, MED;
-  GOUKEI = 0;
+  int MED = 0;
+  int GOUKEI = 0;
   for (int i = 0; i < NODEHANI; i++) {
     GOUKEI += HIST[i];
     if (NUM / 2 < GOUKEI) {

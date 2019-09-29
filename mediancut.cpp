@@ -70,7 +70,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // unsigned char REDUCE_B[IROSUU];
   double MINZ;
   double Z[IROSUU];
-  int X;
+  int X = 0;
   double SUM_R[IROSUU];
   double SUM_G[IROSUU];
   double SUM_B[IROSUU];
@@ -764,7 +764,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
   }
 
-  double *EDGERASISAY, REDGE, GEDGE, BEDGE;
+  double *EDGERASISAY = nullptr;
+  double REDGE, GEDGE, BEDGE;
   if (vvv == 4) {
     EDGERASISAY = (double *)malloc(sizeof(double) * hsize * vsize);
     // for(i=0,k=0;i<vsize;i++){
@@ -1060,7 +1061,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   double *YYY;
   double *ZZZ;
   double MAXX, MINN;
-  int THRESH;
+  int THRESH = 0;
   double DTHRESH;
   RR = (double *)malloc(sizeof(double) * hsize * vsize);
   GG = (double *)malloc(sizeof(double) * hsize * vsize);
@@ -1093,7 +1094,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
   }
 
-  double *RRRRRR, *GGGGGG, *BBBBBB;
+  double *RRRRRR = nullptr;
+  double *GGGGGG = nullptr;
+  double *BBBBBB = nullptr;
   int GASOSUU = hsize * vsize - EDGE_GASOSUU;
   if (omh == 3 || omh == 4) {
 
@@ -1165,7 +1168,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
 
   double MAXD;
-  double TEMP;
+  double TEMP = 0.0;
   if (PT[MEN][0].INDEXNUM != 0) {
     U_R /= (double)PT[MEN][0].INDEXNUM;
     U_G /= (double)PT[MEN][0].INDEXNUM;
@@ -3761,15 +3764,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       *(IIGIN + i) = (*(GIN + i));
       *(IIBIN + i) = (*(BIN + i));
     }
-    int mx;
+    int mx = 0;
     if (dither == 0 || dither == 1) {
       mx = hsize + 2;
     } else if (dither == 2 || dither == 3) {
       mx = hsize + 4;
     }
-    double *errorR;
-    double *errorG;
-    double *errorB;
+    double *errorR = nullptr;
+    double *errorG = nullptr;
+    double *errorB = nullptr;
     if (dither == 0 || dither == 1) {
       errorR = (double *)malloc(sizeof(double) * mx * 2);
       errorG = (double *)malloc(sizeof(double) * mx * 2);
@@ -4069,15 +4072,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       *(IIGIN + i) = (*(YIN + i));
       *(IIBIN + i) = (*(UIN + i));
     }
-    int mx;
+    int mx = 0;
     if (dither == 0 || dither == 1) {
       mx = hsize + 2;
     } else if (dither == 2 || dither == 3) {
       mx = hsize + 4;
     }
-    double *errorR;
-    double *errorG;
-    double *errorB;
+    double *errorR = nullptr;
+    double *errorG = nullptr;
+    double *errorB = nullptr;
     if (dither == 0 || dither == 1) {
       errorR = (double *)malloc(sizeof(double) * mx * 2);
       errorG = (double *)malloc(sizeof(double) * mx * 2);
