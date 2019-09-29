@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -425,92 +426,34 @@ int ohtsu(int NUM, const int *X) {
 int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
            int omh) {
   assert(omh == 3 || omh == 4);
-  // NUM=7;
-  // omh=3;
 
-  // double XX[7] = {-10.5,-9.0,-8.0,-7.0,-6.0,-5.5,-3.2};
-  // double XX[7] = {-10.0,-7.5,-6.8,-6.5,-6.3,-5.5,-3.2};
-  //    double XX[7] = {-9.0,-7.5,-6.8,-6.5,-6.3,-5.5,-3.2};
-  // double XX[7] = {-10.0,-7.5,-6.8,-6.5,-6.3,-5.5,5.3};
-  // double XX[7] = {-10.0,-7.5,-6.8,-6.5,-6.3,-5.5,5.0};
-  // double XX[7] = {10.5,13.0,14.8,16.5,18.3,19.5,25.0};
-  // double XX[7] = {10.0,13.0,14.8,16.5,18.3,19.5,25.0};
-  // double XX[7] = {0.0,2.0,14.8,16.5,18.3,19.5,25.0};
-  /// double XX[7] = {-10.5,-9.0,-8.0,-7.0,-6.0,-5.5,0.0};
-
-  //    for(i=0;i<7;i++){
-  //        X[i] = XX[i];
-  //    }
-
-  // -10,-10,-10,-10,-10,
-  // -3,-3,-3,-3,-3,
-  // -1,-1,0,1,1,
-  // 3,3,3,3,3,
-  // 10,10,10,10,10,
-  // 10,10,10,10,10};
-  // printf("OHTSU2 START!!\n");
   std::pair<const double *, const double *> MINMAX =
       std::minmax_element(&X[0], &X[NUM]);
   double MAX = *MINMAX.second;
   double MIN = *MINMAX.first;
-  int CMAX, CMIN;
+  int CMAX = (int)floor(MAX); // マイナス時にも底を取る
+  int CMIN;
 
-  if (MAX > 0.0) {
-    CMAX = (int)MAX;
-  } else if (MAX == 0.0) {
-    CMAX = 0.0;
-  } else {
-    CMAX = (int)MAX - 1;
-  }
-  if (MIN > 0.0) {
+  if (MIN > -1.0) {
+    // -1.0 より大きい時は 0 に近い値に丸める
     CMIN = (int)MIN;
-  } else if (MIN == 0.0) {
-    CMIN = 0.0;
   } else {
-    if (MIN - (double)((int)(MIN)) != 0.0) {
-      CMIN = (int)MIN - 1;
-    } else {
-      CMIN = (int)MIN;
-    }
+    // -1.0 以下の場合に底を取る
+    CMIN = floor(MIN);
   }
 
   int NODEHANI = CMAX - CMIN + 1;
-  // int *HIST;
-  // HIST = (int *)malloc(sizeof(int)*NODEHANI);
-  // ND
-  // 0- -11
-  // 1- -10
-  //   -6.7 - 5.3
-  //    -7 - 6  14
-  // 11- 0
-
-  // 22- 11
-  // for(i=0;i<NODEHANI;i++){
-  //*(HIST+i) = 0;
-  //}
-  // int TMP;
-  // for(i=0;i<NUM;i++){
-  // TMP = *(X+i)-MIN;
-  //(*(HIST+TMP))++;
-  //}
-  // debug start
-  // for(i=0;i<NODEHANI;i++){
-  // fprintf(stderr,"NUM ATAI HIST %d %d %d\n",i,i+MIN,*(HIST+i));
-  //}
-  // while(1);
-  // debug end
 
   double MAX2 = 0.0;
-  double MIN2 = 99999.99e64;
+  double MIN2 = DBL_MAX;
   double AVE1, AVE2, BUN1, BUN2, AVEY1, AVEY2, BUNY1, BUNY2, AVEZ1, AVEZ2,
       BUNZ1, BUNZ2;
   int TOTAL1, TOTAL2;
   double HANTEI, HANTEI2;
   int THRESH = 0;
   int THRESH2 = 0;
-  // printf("CMIN=%d,CMAX=%d,NODEHANI=%d\n",CMIN,CMAX,NODEHANI);
+
   for (int i = 1; i < NODEHANI; i++) {
-    // printf("i=%d\n",i);
     AVE1 = 0.0;
     TOTAL1 = 0;
     BUN1 = 0.0;
@@ -526,7 +469,6 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
     AVEZ2 = 0.0;
     BUNZ2 = 0.0;
 
-    // for(j=0;j<i;j++){
     for (int j = 0; j < NUM; j++) {
       if (X[j] - (double)(CMIN) < (double)i) {
         AVE1 += X[j];
@@ -540,19 +482,13 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
         TOTAL2++;
       }
     }
-    //    printf("TOTAL1 = %d,TOTAL2=%d\n",TOTAL1,TOTAL2);
     AVE1 /= (double)(TOTAL1);
     AVE2 /= (double)(TOTAL2);
     AVEY1 /= (double)(TOTAL1);
     AVEY2 /= (double)(TOTAL2);
     AVEZ1 /= (double)(TOTAL1);
     AVEZ2 /= (double)(TOTAL2);
-    //    printf("TOTAL1 = %d,TOTAL2 = %d\n",TOTAL1,TOTAL2);
-    // for(j=i;j<NODEHANI;j++){
-    // AVE2 += (*(HIST+j))*(j+MIN);
-    // TOTAL2 += (*(HIST+j));
-    //}
-    // AVE2 /= (float)(TOTAL2);
+
     for (int j = 0; j < NUM; j++) {
       if (X[j] - (double)(CMIN) < (double)i) {
         BUN1 += (X[j] - AVE1) * (X[j] - AVE1);
@@ -570,6 +506,7 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
     BUNY2 /= TOTAL2;
     BUNZ1 /= TOTAL1;
     BUNZ2 /= TOTAL2;
+
     if (omh == 3) {
       HANTEI =
           (double)(TOTAL1) * (double)(TOTAL2) * (AVE1 - AVE2) * (AVE1 - AVE2);
@@ -578,7 +515,6 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
       HANTEI2 = (BUN1 + BUNY1 + BUNZ1) * (double)TOTAL1 +
                 (BUN2 + BUNY2 + BUNZ2) * (double)TOTAL2;
     }
-    //    printf("HANTEI=%f\n",HANTEI);
     if (omh == 3) {
       if (MAX2 < HANTEI) {
         MAX2 = HANTEI;
@@ -592,6 +528,7 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
       }
     }
   }
+
   THRESH += CMIN;
   THRESH2 += CMIN;
   // debug start
@@ -599,7 +536,7 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
           THRESH2, CMAX);
   //        while(1);
   // debug end
-  //    printf("ohtsu2 end!!\n");
+
   if (omh == 3) {
     return (THRESH);
   } else if (omh == 4) {
