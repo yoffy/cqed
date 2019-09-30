@@ -423,6 +423,69 @@ int ohtsu(int NUM, const int *X) {
   return (THRESH);
 } // main kansuu end
 
+struct Threshold {
+  double value;  // 大小比較する値
+  int index = 0; // threshold
+
+  Threshold() : value(0.0) {}
+  Threshold(double v) : value(v) {}
+};
+bool operator<(const Threshold &lhs, const Threshold &rhs) {
+  return lhs.value < rhs.value;
+}
+
+struct XYZ_t {
+  double X, Y, Z;
+
+  XYZ_t &operator+=(const XYZ_t &rhs) {
+    this->X += rhs.X;
+    this->Y += rhs.Y;
+    this->Z += rhs.Z;
+    return *this;
+  }
+  // ベクトル版 {X1+X2, Y1+Y2, Z1+Z2}
+  friend XYZ_t operator+(XYZ_t lhs, const XYZ_t &rhs) {
+    lhs += rhs;
+    return lhs;
+  }
+};
+// ソート用 (X しか見ないことに注意)
+bool operator<(const XYZ_t &lhs, const XYZ_t &rhs) { return lhs.X < rhs.X; }
+// ベクトル版 {X1-X2, Y1-Y2, Z1-Z2}
+XYZ_t operator-(const XYZ_t &lhs, const XYZ_t &rhs) {
+  return XYZ_t{lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z};
+}
+XYZ_t operator*(const XYZ_t &lhs, const XYZ_t &rhs) {
+  return XYZ_t{lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z};
+}
+// スカラ版 {X*a, Y*a, Z*a}
+XYZ_t operator/(const XYZ_t &lhs, double rhs) {
+  return XYZ_t{lhs.X / rhs, lhs.Y / rhs, lhs.Z / rhs};
+}
+
+struct Statistics {
+  XYZ_t SUM = {0.0, 0.0, 0.0};   // 和
+  XYZ_t SQSUM = {0.0, 0.0, 0.0}; // 二乗和
+  int TOTAL = 0;
+
+  // 加算
+  void Add(const XYZ_t &v) {
+    this->SUM += v;
+    this->SQSUM += v * v;
+    this->TOTAL++;
+  }
+  // 平均
+  XYZ_t Mean() const { return this->SUM / this->TOTAL; }
+  // 分散
+  // (X[j] - mean(X[:]))**2 = mean(X[:]**2) - mean(X[:])**2;
+  XYZ_t Variance() const {
+    XYZ_t MEAN = this->Mean();
+    XYZ_t MEANSQ = MEAN * MEAN;
+    XYZ_t SQMEAN = this->SQSUM / this->TOTAL;
+    return SQMEAN - MEANSQ;
+  }
+};
+
 int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
            int omh) {
   assert(omh == 3 || omh == 4);
@@ -444,103 +507,87 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
 
   int NODEHANI = CMAX - CMIN + 1;
 
-  double MAX2 = 0.0;
-  double MIN2 = DBL_MAX;
-  double AVE1, AVE2, BUN1, BUN2, AVEY1, AVEY2, BUNY1, BUNY2, AVEZ1, AVEZ2,
-      BUNZ1, BUNZ2;
-  int TOTAL1, TOTAL2;
-  double HANTEI, HANTEI2;
-  int THRESH = 0;
-  int THRESH2 = 0;
+  // X が一定以下のみ集計するため、事前にソートしておくことで効率よくする
+  std::vector<XYZ_t> XYZ(NUM);
+  for (int i = 0; i < NUM; i++) {
+    XYZ[i] = XYZ_t{X[i], Y[i], Z[i]};
+  }
+  std::sort(XYZ.begin(), XYZ.end());
+
+  std::vector<Statistics> STAT1(NODEHANI);
+  {
+    Statistics STAT;
+    int j = 0;
+    for (int i = 1; i < NODEHANI; i++) {
+      for (; j < NUM; j++) {
+        // X < i + CMIN なもののみ集計する
+        const XYZ_t &XYZ_j = XYZ[j];
+        if (!(XYZ_j.X < i + CMIN)) {
+          break; // X < i + CMIN を満たしていないので終了
+        }
+        STAT.Add(XYZ_j);
+      }
+      STAT1[i] = STAT;
+    }
+  }
+
+  std::vector<Statistics> STAT2(NODEHANI);
+  {
+    Statistics STAT;
+    int j = NUM - 1;
+    for (int i = NODEHANI - 1; 0 < i; i--) {
+      for (; 0 <= j; j--) {
+        // X >= i + CMIN なもののみ集計する
+        const XYZ_t &XYZ_j = XYZ[j];
+        if (!(XYZ_j.X >= i + CMIN)) {
+          break; // X >= i + CMIN を満たしていないので終了
+        }
+        STAT.Add(XYZ_j);
+      }
+      STAT2[i] = STAT;
+    }
+  }
+
+  Threshold THRESH_MAX(0.0);     // 最大値
+  Threshold THRESH_MIN(DBL_MAX); // 最小値
 
   for (int i = 1; i < NODEHANI; i++) {
-    AVE1 = 0.0;
-    TOTAL1 = 0;
-    BUN1 = 0.0;
-    AVE2 = 0.0;
-    TOTAL2 = 0;
-    BUN2 = 0.0;
-    AVEY1 = 0.0;
-    BUNY1 = 0.0;
-    AVEY2 = 0.0;
-    BUNY2 = 0.0;
-    AVEZ1 = 0.0;
-    BUNZ1 = 0.0;
-    AVEZ2 = 0.0;
-    BUNZ2 = 0.0;
-
-    for (int j = 0; j < NUM; j++) {
-      if (X[j] - (double)(CMIN) < (double)i) {
-        AVE1 += X[j];
-        AVEY1 += Y[j];
-        AVEZ1 += Z[j];
-        TOTAL1++;
-      } else {
-        AVE2 += X[j];
-        AVEY2 += Y[j];
-        AVEZ2 += Z[j];
-        TOTAL2++;
-      }
-    }
-    AVE1 /= (double)(TOTAL1);
-    AVE2 /= (double)(TOTAL2);
-    AVEY1 /= (double)(TOTAL1);
-    AVEY2 /= (double)(TOTAL2);
-    AVEZ1 /= (double)(TOTAL1);
-    AVEZ2 /= (double)(TOTAL2);
-
-    for (int j = 0; j < NUM; j++) {
-      if (X[j] - (double)(CMIN) < (double)i) {
-        BUN1 += (X[j] - AVE1) * (X[j] - AVE1);
-        BUNY1 += (Y[j] - AVEY1) * (Y[j] - AVEY1);
-        BUNZ1 += (Z[j] - AVEZ1) * (Z[j] - AVEZ1);
-      } else {
-        BUN2 += (X[j] - AVE2) * (X[j] - AVE2);
-        BUNY2 += (Y[j] - AVEY2) * (Y[j] - AVEY2);
-        BUNZ2 += (Z[j] - AVEZ2) * (Z[j] - AVEZ2);
-      }
-    }
-    BUN1 /= TOTAL1;
-    BUN2 /= TOTAL2;
-    BUNY1 /= TOTAL1;
-    BUNY2 /= TOTAL2;
-    BUNZ1 /= TOTAL1;
-    BUNZ2 /= TOTAL2;
-
     if (omh == 3) {
-      HANTEI =
-          (double)(TOTAL1) * (double)(TOTAL2) * (AVE1 - AVE2) * (AVE1 - AVE2);
-    }
-    if (omh == 4) {
-      HANTEI2 = (BUN1 + BUNY1 + BUNZ1) * (double)TOTAL1 +
-                (BUN2 + BUNY2 + BUNZ2) * (double)TOTAL2;
-    }
-    if (omh == 3) {
-      if (MAX2 < HANTEI) {
-        MAX2 = HANTEI;
-        THRESH = i;
+      Threshold HANTEI;
+      XYZ_t AVE1 = STAT1[i].Mean();
+      XYZ_t AVE2 = STAT2[i].Mean();
+      HANTEI.value = (double)(STAT1[i].TOTAL) * (double)(STAT2[i].TOTAL) *
+                     (AVE1.X - AVE2.X) * (AVE1.X - AVE2.X);
+      HANTEI.index = i;
+      if (THRESH_MAX < HANTEI) {
+        THRESH_MAX = HANTEI;
       }
     }
     if (omh == 4) {
-      if (MIN2 > HANTEI2) {
-        MIN2 = HANTEI2;
-        THRESH2 = i;
+      Threshold HANTEI;
+      XYZ_t BUN1 = STAT1[i].Variance();
+      XYZ_t BUN2 = STAT2[i].Variance();
+      HANTEI.value = (BUN1.X + BUN1.Y + BUN1.Z) * (double)STAT1[i].TOTAL +
+                     (BUN2.X + BUN2.Y + BUN2.Z) * (double)STAT2[i].TOTAL;
+      HANTEI.index = i;
+      if (HANTEI < THRESH_MIN) {
+        THRESH_MIN = HANTEI;
       }
     }
   }
 
-  THRESH += CMIN;
-  THRESH2 += CMIN;
+  THRESH_MAX.index += CMIN;
+  THRESH_MIN.index += CMIN;
   // debug start
-  fprintf(stderr, "CMIN=%d,THRESH=%d,THRESH2=%d,CMAX=%d\n", CMIN, THRESH,
-          THRESH2, CMAX);
+  fprintf(stderr, "CMIN=%d,THRESH=%d,THRESH2=%d,CMAX=%d\n", CMIN,
+          THRESH_MAX.index, THRESH_MIN.index, CMAX);
   //        while(1);
   // debug end
 
   if (omh == 3) {
-    return (THRESH);
+    return (THRESH_MAX.index);
   } else if (omh == 4) {
-    return (THRESH2);
+    return (THRESH_MIN.index);
   }
   return (0);
 } // main kansuu end
