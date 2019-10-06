@@ -45,6 +45,33 @@ void modoshi(double V[3], double R, double G, double B, double *X, double *Y,
              double *Z);
 void kaiten(double V[3], double X, double Y, double Z, double *R, double *G,
             double *B);
+void SobelFilterHorizontal(int hsize, int vsize, const int *IN, int *OUT);
+void SobelFilterVertical(int hsize, int vsize, const int *IN, int *OUT);
+void PrewitAbsoluteFilterVertical(int hsize, int vsize, int et, const int *IN,
+                                  int *OUT, int *EDGE);
+void PrewitAbsoluteFilterHorizontal(int hsize, int vsize, int et, const int *IN,
+                                    int *OUT, int *EDGE);
+int DetectEdge0(int hsize, int vsize, int et, const int *HHEDGER,
+                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
+                const int *HHEDGEB, const int *VVEDGEB, int *OUT);
+int DetectEdge1(int hsize, int vsize, int et, const int *HHEDGER,
+                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
+                const int *HHEDGEB, const int *VVEDGEB, int *OUT);
+int DetectEdge2(int hsize, int vsize, const int *EDGER, const int *VEDGER,
+                const int *EDGEG, const int *VEDGEG, const int *EDGEB,
+                const int *VEDGEB, int *OUT);
+int DetectEdge3(int hsize, int vsize, int et, const int *HHEDGER,
+                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
+                const int *HHEDGEB, const int *VVEDGEB, int *OUT);
+int DetectEdge4(int hsize, int vsize, const int *HHEDGER, const int *VVEDGER,
+                const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
+                const int *VVEDGEB, int *OUT, double *EDGERASISAY);
+int DetectEdge5(int hsize, int vsize, int et, const int *HHEDGER,
+                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
+                const int *HHEDGEB, const int *VVEDGEB, int *OUT);
+int DetectEdge6(int hsize, int vsize, int et, const int *HHEDGER,
+                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
+                const int *HHEDGEB, const int *VVEDGEB, int *OUT);
 
 struct palet //パレット構造体
 {
@@ -488,328 +515,72 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   std::vector<int> VVEDGEG(hsize * vsize);
   std::vector<int> VVEDGEB(hsize * vsize);
 
-  int *index3 = (int *)malloc(sizeof(int) * hsize * vsize);
+  std::vector<int> index3(hsize * vsize);
 
   int EDGE_GASOSUU = 0;
 
-  if (vvv == 3 || vvv == 4 || vvv == 5) {
-    int SOBEL[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
-    int SOBEL2[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+  std::vector<double> EDGERASISAY;
 
-    for (int i = 0; i < vsize; i++) {   // suityoku
-      for (int j = 0; j < hsize; j++) { // suihei
-        for (int k = 0; k < 3; k++) {   // suityoku
-          for (int l = 0; l < 3; l++) { // suihei
-            m = i + k - 1;              //-1~1suiityoku
-            n = j + l - 1;              //-1~1suihei
-            if (n < 0) {
-              n = -n;
-            }
-            if (n > (hsize - 1)) {
-              n = 2 * (hsize - 1) - n;
-            }
-            if (m < 0) {
-              m = -m;
-            }
-            if (m > (vsize - 1)) {
-              m = 2 * (vsize - 1) - m;
-            }
-            HHEDGER[j * vsize + i] +=
-                SOBEL2[3 * k + l] * (int)RIN[n * vsize + m];
-            HHEDGEG[j * vsize + i] +=
-                SOBEL2[3 * k + l] * (int)GIN[n * vsize + m];
-            HHEDGEB[j * vsize + i] +=
-                SOBEL2[3 * k + l] * (int)BIN[n * vsize + m];
-            VVEDGER[j * vsize + i] +=
-                SOBEL[3 * k + l] * (int)RIN[n * vsize + m];
-            VVEDGEG[j * vsize + i] +=
-                SOBEL[3 * k + l] * (int)GIN[n * vsize + m];
-            VVEDGEB[j * vsize + i] +=
-                SOBEL[3 * k + l] * (int)BIN[n * vsize + m];
-            // printf("%d\n",RIN[n*vsize+m]);
-          }
-        }
-      }
+  if (vvv == 3 || vvv == 4 || vvv == 5) {
+    SobelFilterHorizontal(hsize, vsize, &IRIN[0], &HHEDGER[0]);
+    SobelFilterVertical(hsize, vsize, &IRIN[0], &VVEDGER[0]);
+
+    SobelFilterHorizontal(hsize, vsize, &IGIN[0], &HHEDGEG[0]);
+    SobelFilterVertical(hsize, vsize, &IGIN[0], &VVEDGEG[0]);
+
+    SobelFilterHorizontal(hsize, vsize, &IBIN[0], &HHEDGEB[0]);
+    SobelFilterVertical(hsize, vsize, &IBIN[0], &VVEDGEB[0]);
+
+    if (vvv == 3) {
+      EDGE_GASOSUU =
+          DetectEdge3(hsize, vsize, et, &HHEDGER[0], &VVEDGER[0], &HHEDGEG[0],
+                      &VVEDGEG[0], &HHEDGEB[0], &VVEDGEB[0], &index3[0]);
+    } else if (vvv == 4) {
+      EDGERASISAY = std::vector<double>(hsize * vsize);
+
+      EDGE_GASOSUU = DetectEdge4(hsize, vsize, &HHEDGER[0], &VVEDGER[0],
+                                 &HHEDGEG[0], &VVEDGEG[0], &HHEDGEB[0],
+                                 &VVEDGEB[0], &index3[0], &EDGERASISAY[0]);
+    } else if (vvv == 5) {
+      EDGE_GASOSUU =
+          DetectEdge5(hsize, vsize, et, &HHEDGER[0], &VVEDGER[0], &HHEDGEG[0],
+                      &VVEDGEG[0], &HHEDGEB[0], &VVEDGEB[0], &index3[0]);
     }
   }
 
   if ((vvv >= 0 && vvv <= 2) || vvv == 6) {
-    for (int i = 0; i < vsize; i++) {
-      for (int j = 0; j < hsize; j++) {
-        int k = j - 1;
-        int l = j + 1;
-        if (k < 0) {
-          k = -k;
-        }
-        if (k > (hsize - 1)) {
-          k = 2 * (hsize - 1) - k;
-        }
-        if (l < 0) {
-          l = -l;
-        }
-        if (l > (hsize - 1)) {
-          l = 2 * (hsize - 1) - l;
-        }
-        HHEDGER[j * vsize + i] = abs(IRIN[k * vsize + i] - IRIN[l * vsize + i]);
-        // EDGER[j*vsize+i]=1;
-        // } else {
-        // EDGER[j*vsize+i]=0;
-        // }
-        HHEDGEG[j * vsize + i] = abs(IGIN[k * vsize + i] - IGIN[l * vsize + i]);
-        // EDGEG[j*vsize+i]=1;
-        // } else {
-        // EDGEG[j*vsize+i]=0;
-        // }
-        HHEDGEB[j * vsize + i] = abs(IBIN[k * vsize + i] - IBIN[l * vsize + i]);
-        // EDGEB[j*vsize+i]=1;
-        // } else {
-        // EDGEB[j*vsize+i]=0;
-        // }
-        if ((abs(IRIN[k * vsize + i] - IRIN[l * vsize + i])) >= et) {
-          EDGER[j * vsize + i] = 1;
-        } else {
-          EDGER[j * vsize + i] = 0;
-        }
-        if ((abs(IGIN[k * vsize + i] - IGIN[l * vsize + i])) >= et) {
-          EDGEG[j * vsize + i] = 1;
-        } else {
-          EDGEG[j * vsize + i] = 0;
-        }
-        if ((abs(IBIN[k * vsize + i] - IBIN[l * vsize + i])) >= et) {
-          EDGEB[j * vsize + i] = 1;
-        } else {
-          EDGEB[j * vsize + i] = 0;
-        }
-      }
-    }
+    PrewitAbsoluteFilterVertical(hsize, vsize, et, &IRIN[0], &HHEDGER[0],
+                                 &EDGER[0]);
+    PrewitAbsoluteFilterHorizontal(hsize, vsize, et, &IRIN[0], &VVEDGER[0],
+                                   &VEDGER[0]);
 
-    for (int i = 0; i < hsize; i++) {
-      for (int j = 0; j < vsize; j++) {
-        int k = j - 1;
-        int l = j + 1;
-        if (k < 0) {
-          k = -k;
-        }
-        if (l > (vsize - 1)) {
-          l = 2 * (vsize - 1) - l;
-        }
-        VVEDGER[i * vsize + j] = abs(IRIN[i * vsize + l] - IRIN[i * vsize + k]);
-        // VEDGER[i*vsize+j] = 1;
-        // } else {
-        // VEDGER[i*vsize+j] = 0;
-        // }
-        VVEDGEG[i * vsize + j] = abs(IGIN[i * vsize + l] - IGIN[i * vsize + k]);
-        // VEDGEG[i*vsize+j] = 1;
-        // } else {
-        // VEDGEG[i*vsize+j] = 0;
-        // }
-        VVEDGEB[i * vsize + j] = abs(IBIN[i * vsize + l] - IBIN[i * vsize + k]);
-        // VEDGEB[i*vsize+j] = 1;
-        // } else {
-        // VEDGEB[i*vsize+j] = 0;
-        // }
-        if (abs(IRIN[i * vsize + l] - IRIN[i * vsize + k]) >= et) {
-          VEDGER[i * vsize + j] = 1;
-        } else {
-          VEDGER[i * vsize + j] = 0;
-        }
-        if (abs(IGIN[i * vsize + l] - IGIN[i * vsize + k]) >= et) {
-          VEDGEG[i * vsize + j] = 1;
-        } else {
-          VEDGEG[i * vsize + j] = 0;
-        }
-        if (abs(IBIN[i * vsize + l] - IBIN[i * vsize + k]) >= et) {
-          VEDGEB[i * vsize + j] = 1;
-        } else {
-          VEDGEB[i * vsize + j] = 0;
-        }
-      }
-    }
+    PrewitAbsoluteFilterVertical(hsize, vsize, et, &IGIN[0], &HHEDGEG[0],
+                                 &EDGEG[0]);
+    PrewitAbsoluteFilterHorizontal(hsize, vsize, et, &IGIN[0], &VVEDGEG[0],
+                                   &VEDGEG[0]);
 
-    for (int i = 0; i < vsize; i++) {
-      for (int j = 0; j < hsize; j++) {
-        if (vvv == 0) {
-          if ((sqrt((float)HHEDGER[j * vsize + i] *
-                        (float)HHEDGER[j * vsize + i] +
-                    (float)VVEDGER[j * vsize + i] *
-                        (float)VVEDGER[j * vsize + i]) >= et * sqrt(2.0)) ||
-              (sqrt((float)HHEDGEG[j * vsize + i] *
-                        (float)HHEDGEG[j * vsize + i] +
-                    (float)VVEDGEG[j * vsize + i] *
-                        (float)VVEDGEG[j * vsize + i]) >= et * sqrt(2.0)) ||
-              (sqrt((float)HHEDGEB[j * vsize + i] *
-                        (float)HHEDGEB[j * vsize + i] +
-                    (float)VVEDGEB[j * vsize + i] *
-                        (float)VVEDGEB[j * vsize + i]) >= et * sqrt(2.0))) {
-            *(index3 + j * vsize + i) = -1;
-            EDGE_GASOSUU++;
-          } else {
-            *(index3 + j * vsize + i) = 1;
-          }
-        }
-        if (vvv == 6) {
-          if (sqrt((((float)HHEDGER[j * vsize + i] *
-                         (float)HHEDGER[j * vsize + i] +
-                     (float)VVEDGER[j * vsize + i] *
-                         (float)VVEDGER[j * vsize + i])) +
-                   (((float)HHEDGEG[j * vsize + i] *
-                         (float)HHEDGEG[j * vsize + i] +
-                     (float)VVEDGEG[j * vsize + i] *
-                         (float)VVEDGEG[j * vsize + i])) +
-                   (((float)HHEDGEB[j * vsize + i] *
-                         (float)HHEDGEB[j * vsize + i] +
-                     (float)VVEDGEB[j * vsize + i] *
-                         (float)VVEDGEB[j * vsize + i]))) >= et * sqrt(6.0)) {
-            *(index3 + j * vsize + i) = -1;
-            EDGE_GASOSUU++;
-          } else {
-            *(index3 + j * vsize + i) = 1;
-          }
-        }
-        if (vvv == 1) {
-          if (HHEDGER[j * vsize + i] >= et || VVEDGER[j * vsize + i] >= et ||
-              HHEDGEG[j * vsize + i] >= et || VVEDGEG[j * vsize + i] >= et ||
-              HHEDGEB[j * vsize + i] >= et || VVEDGEB[j * vsize + i] >= et) {
-            *(index3 + j * vsize + i) = -1;
-            EDGE_GASOSUU++;
-          } else {
-            *(index3 + j * vsize + i) = 1;
-          }
-        }
-        if (vvv == 2) {
-          if (EDGER[j * vsize + i] == 1 || EDGEG[j * vsize + i] == 1 ||
-              EDGEB[j * vsize + i] == 1 || VEDGER[j * vsize + i] == 1 ||
-              VEDGEG[j * vsize + i] == 1 || VEDGEB[j * vsize + i] == 1) {
-            *(index3 + j * vsize + i) = -1;
-            EDGE_GASOSUU++;
-          } else {
-            *(index3 + j * vsize + i) = 1;
-          }
-        }
-      }
-    }
+    PrewitAbsoluteFilterVertical(hsize, vsize, et, &IBIN[0], &HHEDGEB[0],
+                                 &EDGEB[0]);
+    PrewitAbsoluteFilterHorizontal(hsize, vsize, et, &IBIN[0], &VVEDGEB[0],
+                                   &VEDGEB[0]);
 
+    if (vvv == 0) {
+      EDGE_GASOSUU =
+          DetectEdge0(hsize, vsize, et, &HHEDGER[0], &VVEDGER[0], &HHEDGEG[0],
+                      &VVEDGEG[0], &HHEDGEB[0], &VVEDGEB[0], &index3[0]);
+    } else if (vvv == 1) {
+      EDGE_GASOSUU =
+          DetectEdge1(hsize, vsize, et, &HHEDGER[0], &VVEDGER[0], &HHEDGEG[0],
+                      &VVEDGEG[0], &HHEDGEB[0], &VVEDGEB[0], &index3[0]);
+    } else if (vvv == 2) {
+      EDGE_GASOSUU = DetectEdge2(hsize, vsize, &EDGER[0], &VEDGER[0], &EDGEG[0],
+                                 &VEDGEG[0], &EDGEB[0], &VEDGEB[0], &index3[0]);
+    } else if (vvv == 6) {
+      EDGE_GASOSUU =
+          DetectEdge6(hsize, vsize, et, &HHEDGER[0], &VVEDGER[0], &HHEDGEG[0],
+                      &VVEDGEG[0], &HHEDGEB[0], &VVEDGEB[0], &index3[0]);
+    }
   } // cnt if end
-
-  if (vvv == 3 || vvv == 5) {
-    for (int i = 0; i < vsize; i++) {
-      for (int j = 0; j < hsize; j++) {
-        // printf("%f\n",sqrt((float)HHEDGER[j*vsize+i]*(float)HHEDGER[j*vsize+i]
-        // + (float)VVEDGER[j*vsize+i] * (float)VVEDGER[j*vsize+i]));
-        // printf("%f\n",sqrt((float)HHEDGEG[j*vsize+i]*(float)HHEDGEG[j*vsize+i]
-        // + (float)VVEDGEG[j*vsize+i] * (float)VVEDGEG[j*vsize+i]));
-        // printf("%f\n",sqrt((float)HHEDGEB[j*vsize+i]*(float)HHEDGEB[j*vsize+i]
-        // + (float)VVEDGEB[j*vsize+i] * (float)VVEDGEB[j*vsize+i]));
-
-        if (vvv == 3) {
-          if ((sqrt((float)HHEDGER[j * vsize + i] *
-                        (float)HHEDGER[j * vsize + i] +
-                    (float)VVEDGER[j * vsize + i] *
-                        (float)VVEDGER[j * vsize + i]) >=
-               et * 4.0 * sqrt(2.0)) ||
-              (sqrt((float)HHEDGEG[j * vsize + i] *
-                        (float)HHEDGEG[j * vsize + i] +
-                    (float)VVEDGEG[j * vsize + i] *
-                        (float)VVEDGEG[j * vsize + i]) >=
-               et * 4.0 * sqrt(2.0)) ||
-              (sqrt((float)HHEDGEB[j * vsize + i] *
-                        (float)HHEDGEB[j * vsize + i] +
-                    (float)VVEDGEB[j * vsize + i] *
-                        (float)VVEDGEB[j * vsize + i]) >=
-               et * 4.0 * sqrt(2.0))) {
-            *(index3 + j * vsize + i) = -1;
-            EDGE_GASOSUU++;
-          } else {
-            *(index3 + j * vsize + i) = 1;
-          }
-        }
-
-        if (vvv == 5) {
-          //            printf("%f\n",sqrt(((float)HHEDGER[j*vsize+i]*(float)HHEDGER[j*vsize+i]
-          //            + (float)VVEDGER[j*vsize+i] * (float)VVEDGER[j*vsize+i])
-          //                +((float)HHEDGEG[j*vsize+i]*(float)HHEDGEG[j*vsize+i]
-          //                + (float)VVEDGEG[j*vsize+i] *
-          //                (float)VVEDGEG[j*vsize+i])
-          //            +((float)HHEDGEB[j*vsize+i]*(float)HHEDGEB[j*vsize+i] +
-          //            (float)VVEDGEB[j*vsize+i] *
-          //            (float)VVEDGEB[j*vsize+i])));
-          if (sqrt(((float)HHEDGER[j * vsize + i] *
-                        (float)HHEDGER[j * vsize + i] +
-                    (float)VVEDGER[j * vsize + i] *
-                        (float)VVEDGER[j * vsize + i]) +
-                   ((float)HHEDGEG[j * vsize + i] *
-                        (float)HHEDGEG[j * vsize + i] +
-                    (float)VVEDGEG[j * vsize + i] *
-                        (float)VVEDGEG[j * vsize + i]) +
-                   ((float)HHEDGEB[j * vsize + i] *
-                        (float)HHEDGEB[j * vsize + i] +
-                    (float)VVEDGEB[j * vsize + i] *
-                        (float)VVEDGEB[j * vsize + i])) >=
-              et * 4.0 * sqrt(6.0)) {
-            *(index3 + j * vsize + i) = -1;
-            EDGE_GASOSUU++;
-          } else {
-            *(index3 + j * vsize + i) = 1;
-          }
-        }
-      }
-    }
-  }
-
-  double *EDGERASISAY = nullptr;
-  double REDGE, GEDGE, BEDGE;
-  if (vvv == 4) {
-    EDGERASISAY = (double *)malloc(sizeof(double) * hsize * vsize);
-    // for(i=0,k=0;i<vsize;i++){
-    // for(j=0;j<hsize;j++){
-    // printf("%f\n",sqrt((float)HHEDGER[j*vsize+i]*(float)HHEDGER[j*vsize+i] +
-    // (float)VVEDGER[j*vsize+i] * (float)VVEDGER[j*vsize+i]));
-    // printf("%f\n",sqrt((float)HHEDGEG[j*vsize+i]*(float)HHEDGEG[j*vsize+i] +
-    // (float)VVEDGEG[j*vsize+i] * (float)VVEDGEG[j*vsize+i]));
-    // printf("%f\n",sqrt((float)HHEDGEB[j*vsize+i]*(float)HHEDGEB[j*vsize+i] +
-    // (float)VVEDGEB[j*vsize+i] * (float)VVEDGEB[j*vsize+i])); if(
-    // (sqrt((float)HHEDGER[j*vsize+i]*(float)HHEDGER[j*vsize+i] +
-    // (float)VVEDGER[j*vsize+i] * (float)VVEDGER[j*vsize+i]) >= et*4.0) ||
-    //(sqrt((float)HHEDGEG[j*vsize+i]*(float)HHEDGEG[j*vsize+i] +
-    //(float)VVEDGEG[j*vsize+i] * (float)VVEDGEG[j*vsize+i]) >= et*4.0) ||
-    //(sqrt((float)HHEDGEB[j*vsize+i]*(float)HHEDGEB[j*vsize+i] +
-    //(float)VVEDGEB[j*vsize+i] * (float)VVEDGEB[j*vsize+i]) >= et*4.0)
-    //){
-    //*(index3+j*vsize+i)=-1;
-    // k++;
-    //} else {
-    //*(index3+j*vsize+i)=1;
-    //}
-    //}
-    //}
-
-    //    EDGERASMAX = -9999999.9e64;
-    for (int i = 0; i < vsize; i++) {
-      for (int j = 0; j < hsize; j++) {
-        *(index3 + j * vsize + i) = 1;
-        REDGE = /*sqrt*/ (
-            (float)HHEDGER[j * vsize + i] * (float)HHEDGER[j * vsize + i] +
-            (float)VVEDGER[j * vsize + i] *
-                (float)VVEDGER[j * vsize + i]) /*/ 4.0 / sqrt(2.0)*/;
-        GEDGE = /*sqrt*/ (
-            (float)HHEDGEG[j * vsize + i] * (float)HHEDGEG[j * vsize + i] +
-            (float)VVEDGEG[j * vsize + i] *
-                (float)VVEDGEG[j * vsize + i]) /*/ 4.0 / sqrt(2.0)*/;
-        BEDGE = /*sqrt*/ (
-            (float)HHEDGEB[j * vsize + i] * (float)HHEDGEB[j * vsize + i] +
-            (float)VVEDGEB[j * vsize + i] *
-                (float)VVEDGEB[j * vsize + i]) /*/ 4.0 / sqrt(2.0)*/;
-        //            EDGERASISAY[j*vsize+i] =
-        //            0.29891*REDGE+0.58661*GEDGE+0.11448*BEDGE;
-        EDGERASISAY[j * vsize + i] =
-            (sqrt(REDGE + GEDGE + BEDGE)) / 4.0 / sqrt(6.0);
-        //            if(EDGERASISAY[j*vsize+i] > EDGERASMAX){
-        //                EDGERASMAX = EDGERASISAY[j*vsize+i];
-        //            }
-      }
-    }
-    //    printf("EDGERASMAX=%f\n",EDGERASMAX);while(1);
-  }
 
   // debug start]
   // if(vvv == 4){
