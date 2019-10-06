@@ -3,19 +3,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 #include <chrono>
-struct StopWatch
-{
+struct StopWatch {
   StopWatch() { pre_ = std::chrono::high_resolution_clock::now(); }
 
   //前回のlap関数コールからの経過時間をmilli sec単位で返す
-  double lap()
-  {
-    auto tmp = std::chrono::high_resolution_clock::now();  // 計測終了時刻を保存
+  double lap() {
+    auto tmp = std::chrono::high_resolution_clock::now(); // 計測終了時刻を保存
     auto dur = tmp - pre_;
     pre_ = tmp;
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(dur).count()/1000000.0;
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(dur).count() /
+           1000000.0;
   }
   std::chrono::high_resolution_clock::time_point pre_;
 };
@@ -61,6 +61,17 @@ struct palet //パレット構造体
 };
 
 struct palet PT[2][IROSUU];
+
+// U から T に変換して複製
+template <typename T, typename U>
+std::vector<T> DuplicateCast(size_t SIZE, const U *IN) {
+  std::vector<T> OUT(SIZE);
+  for (size_t i = 0; i < SIZE; i++) {
+    OUT[i] = static_cast<T>(IN[i]);
+  }
+
+  return OUT;
+}
 
 void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                unsigned char *BIN, unsigned char *PALETGAZOU,
@@ -274,15 +285,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                   0.1429136476;
       }
 
-      YIN[i] =
-          (0.2989 * (float)(*(RrIN + i)) + 0.5866 * (float)(*(GgIN + i)) +
-           0.1145 * (float)(*(BbIN + i)) /*+0.5*/);
+      YIN[i] = (0.2989 * (float)(*(RrIN + i)) + 0.5866 * (float)(*(GgIN + i)) +
+                0.1145 * (float)(*(BbIN + i)) /*+0.5*/);
       UIN[i] =
           ((-0.1350 * (float)(*(RrIN + i)) - 0.2650 * (float)(*(GgIN + i)) +
             0.40000 * (float)(*(BbIN + i))));
-      VIN[i] =
-          (0.4000 * (float)(*(RrIN + i)) - 0.3346 * (float)(*(GgIN + i)) -
-           0.0653 * (float)(*(BbIN + i)));
+      VIN[i] = (0.4000 * (float)(*(RrIN + i)) - 0.3346 * (float)(*(GgIN + i)) -
+                0.0653 * (float)(*(BbIN + i)));
       //                n1= (double)r*0.2989+(double)g*0.5866+(double)b*0.1145;
       //                n2=-(double)r*0.1350-(double)g*0.2650+(double)b*0.4000;
       //                n3= (double)r*0.4000-(double)g*0.3346-(double)b*0.0653;
@@ -461,37 +470,25 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   /****************************************/
 
   double EDGERASISAYD;
-  int *IRIN = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *IGIN = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *IBIN = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *EDGER = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *EDGEG = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *EDGEB = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *HHEDGER = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *HHEDGEG = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *HHEDGEB = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *VVEDGER = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *VVEDGEG = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *VVEDGEB = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *VEDGER = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *VEDGEG = (int *)malloc(sizeof(int) * hsize * vsize);
-  int *VEDGEB = (int *)malloc(sizeof(int) * hsize * vsize);
-  for (int i = 0; i < hsize * vsize; i++) {
-    IRIN[i] = (int)RIN[i];
-    IGIN[i] = (int)GIN[i];
-    IBIN[i] = (int)BIN[i];
-  }
+  std::vector<int> EDGER(hsize * vsize);
+  std::vector<int> EDGEG(hsize * vsize);
+  std::vector<int> EDGEB(hsize * vsize);
+  std::vector<int> VEDGER(hsize * vsize);
+  std::vector<int> VEDGEG(hsize * vsize);
+  std::vector<int> VEDGEB(hsize * vsize);
+  // unsigned char から int に変換して複製
+  std::vector<int> IRIN = DuplicateCast<int>(hsize * vsize, &RIN[0]);
+  std::vector<int> IGIN = DuplicateCast<int>(hsize * vsize, &GIN[0]);
+  std::vector<int> IBIN = DuplicateCast<int>(hsize * vsize, &BIN[0]);
+
+  std::vector<int> HHEDGER(hsize * vsize);
+  std::vector<int> HHEDGEG(hsize * vsize);
+  std::vector<int> HHEDGEB(hsize * vsize);
+  std::vector<int> VVEDGER(hsize * vsize);
+  std::vector<int> VVEDGEG(hsize * vsize);
+  std::vector<int> VVEDGEB(hsize * vsize);
 
   int *index3 = (int *)malloc(sizeof(int) * hsize * vsize);
-  // double EDGERASMAX;
-  for (int i = 0; i < hsize * vsize; i++) {
-    HHEDGER[i] = 0;
-    HHEDGEG[i] = 0;
-    HHEDGEB[i] = 0;
-    VVEDGER[i] = 0;
-    VVEDGEG[i] = 0;
-    VVEDGEB[i] = 0;
-  }
 
   int EDGE_GASOSUU = 0;
 
@@ -2702,8 +2699,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           V[1] = X1[1][Y];
           V[2] = X1[2][Y];
           for (int i = 0; i < hsize * vsize; i++) {
-            kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i,
-                   BBB + i);
+            kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
           }
           // for(i=0,l=0;i<hsize*vsize;i++){
           // if(*(index3+i)!=-1){
@@ -2932,8 +2928,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           V[1] = X1[1][Y];
           V[2] = X1[2][Y];
           for (int i = 0; i < hsize * vsize; i++) {
-            kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i,
-                   BBB + i);
+            kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
           }
           // for(i=0,l=0;i<hsize*vsize;i++){
           // if(*(index3+i)!=-1){
@@ -3118,7 +3113,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           KARI[i] = 0;
         }
         for (int i = 0; i < hsize * vsize; i++) {
-          KARI[ PALETGAZOU[i] ]++;
+          KARI[PALETGAZOU[i]]++;
         }
         for (int i = 0; i < IROSUU; i++) {
           fprintf(stderr, "i=%d %d\n", i, KARI[i]);
@@ -3195,7 +3190,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       // }
     } // kmean loop end
   }
-    printf("hoge3\n");
+  printf("hoge3\n");
   for (int i = 0; i < hsize * vsize; i++) {
     // if(index3[i]!=-1){
     double Z[IROSUU];
@@ -4360,4 +4355,3 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   } // edon if end
 
 } // median cut end
-
