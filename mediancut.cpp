@@ -76,13 +76,14 @@ int DetectEdge5(int hsize, int vsize, int et, const int *HHEDGER,
 int DetectEdge6(int hsize, int vsize, int et, const int *HHEDGER,
                 const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
                 const int *HHEDGEB, const int *VVEDGEB, int *OUT);
-std::tuple<double, double, double> SumEquals(int SIZE, const int *INDEX, int INDEX_NUM,
-                                                   const double *v1,
-                                                   const double *v2,
-                                                   const double *v3);
-std::tuple<double, double, double>
-SumNotEquals(int SIZE, const int *INDEX, int INDEX_NUM, const double *v1,
-               const double *v2, const double *v3);
+std::tuple<double, double, double> SumEquals(int SIZE, const int *INDEX,
+                                             int INDEX_NUM, const double *v1,
+                                             const double *v2,
+                                             const double *v3);
+std::tuple<double, double, double> SumNotEquals(int SIZE, const int *INDEX,
+                                                int INDEX_NUM, const double *v1,
+                                                const double *v2,
+                                                const double *v3);
 
 struct palet //パレット構造体
 {
@@ -237,15 +238,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     for (int i = 0; i < hsize * vsize; i++) {
       YIN[i] = *(
           GgIN +
-          i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+          i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
               ///*+ 0.5*/);
       UIN[i] = *(
           BbIN +
-          i); //((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
+          i); //((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
               //+ 128.0);
       VIN[i] = *(
           RrIN +
-          i); //(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
+          i); //(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
               //+ 128.0);
     }
   } else if (cs == 1) {
@@ -253,13 +254,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       RGBtoLAB(
           RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i,
           UIN +
-              i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+              i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
                   //+ 0.5);
-      //*(UIN+i) =
-      //*(BIN+i);//((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
+      // UIN[i] =
+      // BIN[i];//((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
       //+ 128.5);
-      //*(VIN+i) =
-      //*(RIN+i);//(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
+      // VIN[i] =
+      // RIN[i];//(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
       //+ 128.5);
     }
   } else if (cs == 2) {
@@ -267,27 +268,24 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       RGBtoLuv(
           RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i,
           UIN +
-              i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+              i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
                   //+ 0.5);
-      //*(UIN+i) =
-      //*(BIN+i);//((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
+      // UIN[i] =
+      // BIN[i];//((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
       //+ 128.5);
-      //*(VIN+i) =
-      //*(RIN+i);//(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
+      // VIN[i] =
+      // RIN[i];//(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
       //+ 128.5);
     }
   } else if (cs == 3 || cs == 9) {
     for (int i = 0; i < hsize * vsize; i++) {
-      YIN[i] =
-          (0.29891 * (float)(*(RrIN + i)) + 0.58661 * (float)(*(GgIN + i)) +
-           0.11448 * (float)(*(BbIN + i)) /*+ 0.5*/);
-      UIN[i] =
-          ((-0.16874 * (float)(*(RrIN + i)) - 0.33126 * (float)(*(GgIN + i)) +
-            0.50000 * (float)(*(BbIN + i))) +
-           128.0);
-      VIN[i] =
-          (0.50000 * (float)(*(RrIN + i)) - 0.41869 * (float)(*(GgIN + i)) -
-           0.08131 * (float)(*(BbIN + i)) + 128.0);
+      YIN[i] = (0.29891 * (float)(RrIN[i]) + 0.58661 * (float)(GgIN[i]) +
+                0.11448 * (float)(BbIN[i]) /*+ 0.5*/);
+      UIN[i] = ((-0.16874 * (float)(RrIN[i]) - 0.33126 * (float)(GgIN[i]) +
+                 0.50000 * (float)(BbIN[i])) +
+                128.0);
+      VIN[i] = (0.50000 * (float)(RrIN[i]) - 0.41869 * (float)(GgIN[i]) -
+                0.08131 * (float)(BbIN[i]) + 128.0);
     }
   } else if (cs == 4) {
     for (int i = 0; i < hsize * vsize; i++) {
@@ -313,13 +311,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                   0.1429136476;
       }
 
-      YIN[i] = (0.2989 * (float)(*(RrIN + i)) + 0.5866 * (float)(*(GgIN + i)) +
-                0.1145 * (float)(*(BbIN + i)) /*+0.5*/);
-      UIN[i] =
-          ((-0.1350 * (float)(*(RrIN + i)) - 0.2650 * (float)(*(GgIN + i)) +
-            0.40000 * (float)(*(BbIN + i))));
-      VIN[i] = (0.4000 * (float)(*(RrIN + i)) - 0.3346 * (float)(*(GgIN + i)) -
-                0.0653 * (float)(*(BbIN + i)));
+      YIN[i] = (0.2989 * (float)(RrIN[i]) + 0.5866 * (float)(GgIN[i]) +
+                0.1145 * (float)(BbIN[i]) /*+0.5*/);
+      UIN[i] = ((-0.1350 * (float)(RrIN[i]) - 0.2650 * (float)(GgIN[i]) +
+                 0.40000 * (float)(BbIN[i])));
+      VIN[i] = (0.4000 * (float)(RrIN[i]) - 0.3346 * (float)(GgIN[i]) -
+                0.0653 * (float)(BbIN[i]));
       //                n1= (double)r*0.2989+(double)g*0.5866+(double)b*0.1145;
       //                n2=-(double)r*0.1350-(double)g*0.2650+(double)b*0.4000;
       //                n3= (double)r*0.4000-(double)g*0.3346-(double)b*0.0653;
@@ -335,16 +332,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       BbIN[i] = (255.0 / (1.0 + exp(-aaaa * ((double)BbIN[i] - 127.5))) -
                  255.0 / (1.0 + exp(-aaaa * (-127.5)))) *
                 255.0 / (255.0 - 2.0 * 255.0 / (1.0 + exp(-aaaa * (-127.5))));
-      YIN[i] =
-          (0.29891 * (float)(*(RrIN + i)) + 0.58661 * (float)(*(GgIN + i)) +
-           0.11448 * (float)(*(BbIN + i)) /*+ 0.5*/);
-      UIN[i] =
-          ((-0.16874 * (float)(*(RrIN + i)) - 0.33126 * (float)(*(GgIN + i)) +
-            0.50000 * (float)(*(BbIN + i))) +
-           128.0);
-      VIN[i] =
-          (0.50000 * (float)(*(RrIN + i)) - 0.41869 * (float)(*(GgIN + i)) -
-           0.08131 * (float)(*(BbIN + i)) + 128.0);
+      YIN[i] = (0.29891 * (float)(RrIN[i]) + 0.58661 * (float)(GgIN[i]) +
+                0.11448 * (float)(BbIN[i]) /*+ 0.5*/);
+      UIN[i] = ((-0.16874 * (float)(RrIN[i]) - 0.33126 * (float)(GgIN[i]) +
+                 0.50000 * (float)(BbIN[i])) +
+                128.0);
+      VIN[i] = (0.50000 * (float)(RrIN[i]) - 0.41869 * (float)(GgIN[i]) -
+                0.08131 * (float)(BbIN[i]) + 128.0);
     }
   } else if (cs == 6) {
     for (int i = 0; i < hsize * vsize; i++) {
@@ -360,15 +354,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
       YIN[i] = *(
           GgIN +
-          i); //(0.29891*(float)(*(RIN+i))+0.58661*(float)(*(GIN+i))+0.11448*(float)(*(BIN+i))
+          i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
               ///*+ 0.5*/);
       UIN[i] = *(
           BbIN +
-          i); //((-0.16874*(float)(*(RIN+i))-0.33126*(float)(*(GIN+i))+0.50000*(float)(*(BIN+i)))
+          i); //((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
               //+ 128.0);
       VIN[i] = *(
           RrIN +
-          i); //(0.50000*(float)(*(RIN+i))-0.41869*(float)(*(GIN+i))-0.08131*(float)(*(BIN+i))
+          i); //(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
               //+ 128.0);
     }
   } else if (cs == 7) {
@@ -397,9 +391,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
       YIN[i] = GgIN[i];
       UIN[i] = BbIN
-          [i]; //((-0.1350*(float)(*(RrIN+i))-0.2650*(float)(*(GgIN+i))+0.40000*(float)(*(BbIN+i))));
+          [i]; //((-0.1350*(float)(RrIN[i])-0.2650*(float)(GgIN[i])+0.40000*(float)(BbIN[i])));
       VIN[i] = RrIN
-          [i]; //(0.4000*(float)(*(RrIN+i))-0.3346*(float)(*(GgIN+i))-0.0653*(float)(*(BbIN+i)));
+          [i]; //(0.4000*(float)(RrIN[i])-0.3346*(float)(GgIN[i])-0.0653*(float)(BbIN[i]));
     }
   } else if (cs == 8) {
     for (int i = 0; i < hsize * vsize; i++) {
@@ -426,23 +420,20 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
 
       // for(i=0;i<hsize*vsize;i++){
-      YIN[i] =
-          (0.29891 * (float)(*(RrIN + i)) + 0.58661 * (float)(*(GgIN + i)) +
-           0.11448 * (float)(*(BbIN + i)) /*+ 0.5*/);
-      UIN[i] =
-          ((-0.16874 * (float)(*(RrIN + i)) - 0.33126 * (float)(*(GgIN + i)) +
-            0.50000 * (float)(*(BbIN + i))) +
-           128.0);
-      VIN[i] =
-          (0.50000 * (float)(*(RrIN + i)) - 0.41869 * (float)(*(GgIN + i)) -
-           0.08131 * (float)(*(BbIN + i)) + 128.0);
+      YIN[i] = (0.29891 * (float)(RrIN[i]) + 0.58661 * (float)(GgIN[i]) +
+                0.11448 * (float)(BbIN[i]) /*+ 0.5*/);
+      UIN[i] = ((-0.16874 * (float)(RrIN[i]) - 0.33126 * (float)(GgIN[i]) +
+                 0.50000 * (float)(BbIN[i])) +
+                128.0);
+      VIN[i] = (0.50000 * (float)(RrIN[i]) - 0.41869 * (float)(GgIN[i]) -
+                0.08131 * (float)(BbIN[i]) + 128.0);
       //}
 
-      //*(YIN+i) = GgIN[i];
-      //*(UIN+i) =
-      // BbIN[i];//((-0.1350*(float)(*(RrIN+i))-0.2650*(float)(*(GgIN+i))+0.40000*(float)(*(BbIN+i))));
-      //*(VIN+i) =
-      // RrIN[i];//(0.4000*(float)(*(RrIN+i))-0.3346*(float)(*(GgIN+i))-0.0653*(float)(*(BbIN+i)));
+      // YIN[i] = GgIN[i];
+      // UIN[i] =
+      // BbIN[i];//((-0.1350*(float)(RrIN[i])-0.2650*(float)(GgIN[i])+0.40000*(float)(BbIN[i])));
+      // VIN[i] =
+      // RrIN[i];//(0.4000*(float)(RrIN[i])-0.3346*(float)(GgIN[i])-0.0653*(float)(BbIN[i]));
     }
   }
   double *KARIU, *KARIV;
@@ -476,18 +467,18 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     VIN[i] *= rmult;
   }
   // for(i=0;i<hsize*vsize;i++){
-  //*(VIN+i) = 255.0*rmult*pow(*(VIN+i)/(rmult*255.0),rgamma);
+  // VIN[i] = 255.0*rmult*pow(VIN[i]/(rmult*255.0),rgamma);
   //}
   for (int i = 0; i < hsize * vsize; i++) {
     UIN[i] *= bmult;
   }
   // for(i=0;i<hsize*vsize;i++){
-  //*(UIN+i) = 255.0*bmult*pow(*(UIN+i)/(bmult*255.0),bgamma);
+  // UIN[i] = 255.0*bmult*pow(UIN[i]/(bmult*255.0),bgamma);
   //}
   // YUVは、0-255 たまに負や255を超える場合が発生するかも、あとで検証
   // debug start
   // for(i=0;i<hsize*vsize;i++){
-  // fprintf(stderr," %d %d %d\n",*(YIN+i),*(UIN+i),*(VIN+i));
+  // fprintf(stderr," %d %d %d\n",YIN[i],UIN[i],VIN[i]);
   // }
   // while(1);
   // debug end
@@ -599,7 +590,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           CONVU =(double*)malloc(sizeof(double)*hsize*vsize);
           CONVV =(double*)malloc(sizeof(double)*hsize*vsize);
           for(i=0,m=0;i<hsize*vsize;i++){
-              if(*(index3+i) !=-1){
+              if(index3[i] !=-1){
                   RGB[m] = (((int)RIN[i]) << 16) | (((int)GIN[i]) << 8) |
      ((int)BIN[i]); CONVY[m] = YIN[i]; CONVU[m] = UIN[i]; CONVV[m] = VIN[i];
                   m++;
@@ -622,7 +613,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           int *IROINDEX;
           IROINDEX = (int*)malloc(sizeof(int)*hsize*vsize);
           for(i=0,m=0;i<hsize*vsize;i++){
-              if(*(index3+i) !=-1){
+              if(index3[i] !=-1){
                   IROINDEX[m] = i;
                   m++;
               }
@@ -799,7 +790,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
   for (int i = 0, l = 0; i < hsize * vsize; i++) {
     if (index3[i] != -1) {
-      *(iRRRR + l) = (int)(RRR[i] + 0.5);
+      iRRRR[l] = (int)(RRR[i] + 0.5);
       l++;
     }
   }
@@ -849,9 +840,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   int k2 = 0, l2 = 0;
   for (int i = 0; i < hsize * vsize; i++) {
     if (index3[i] != -1) {
-      // ZZ = X1[0][Y]*((double)(((*(YIN+i)))) - ((double)(U_R)+(*XXX))) +
-      // X1[1][Y]*((double)(((*(UIN+i)))) - ((double)(U_G)+(*YYY))) +
-      // X1[2][Y]*((double)(((*(VIN+i)))) - ((double)(U_B)+(*ZZZ))) ;
+      // ZZ = X1[0][Y]*((double)(((YIN[i]))) - ((double)(U_R)+(*XXX))) +
+      // X1[1][Y]*((double)(((UIN[i]))) - ((double)(U_G)+(*YYY))) +
+      // X1[2][Y]*((double)(((VIN[i]))) - ((double)(U_B)+(*ZZZ))) ;
       // if(ZZ>=0.0){
       if (RRR[i] >= DTHRESH) {
         INDEX[i] = PT[MEN][0].INDEXNO;
@@ -866,8 +857,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   PT[MEN][1].INDEXNUM = l2;
   // maxdistance tuika start
   // 0側のmaxdistanceを求める
-  auto U_RGB = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO,
-                              &YIN[0], &UIN[0], &VIN[0]);
+  auto U_RGB = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
+                         &UIN[0], &VIN[0]);
 
   double MAXD;
   double TEMP = 0.0;
@@ -964,18 +955,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
 
       {
-        double TMP_RR =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-        double TMP_GG =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_BB =
-            0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_RG =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_RB =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_GB =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][0].INDEXNO) {
             TMP_RR += (double)((YIN[i] - U_R) * (YIN[i] - U_R));
@@ -1059,8 +1044,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
         }
         // for(i=0,l=0;i<hsize*vsize;i++){
-        // if(*(index3+i)!=-1){
-        //*(iRRRR+l) = (int)(*(RRR+i)+0.5);
+        // if(index3[i]!=-1){
+        // iRRRR[l] = (int)(RRR[i]+0.5);
         // l++;
         //}
         //}
@@ -1074,16 +1059,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         int l2 = 0;
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][0].INDEXNO) {
-            *(RRRRRR + l2) = RRR[i];
-            *(GGGGGG + l2) = GGG[i];
-            *(BBBBBB + l2) = BBB[i];
+            RRRRRR[l2] = RRR[i];
+            GGGGGG[l2] = GGG[i];
+            BBBBBB[l2] = BBB[i];
             l2++;
           }
         }
         MAXX = -99.9e64;
         MINN = 99.9e64;
         for (int i = 0; i < l2; i++) {
-          if (MAXX < *(RRRRRR + i)) {
+          if (MAXX < RRRRRR[i]) {
             MAXX = RRRRRR[i];
           }
           if (MINN > RRRRRR[i]) {
@@ -1105,7 +1090,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
 
   // 1側のmaxdistanceを求める
-  auto U_RGB2 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, YIN, UIN, VIN);
+  auto U_RGB2 =
+      SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, YIN, UIN, VIN);
   double U_R2 = std::get<0>(U_RGB2);
   double U_G2 = std::get<1>(U_RGB2);
   double U_B2 = std::get<2>(U_RGB2);
@@ -1203,18 +1189,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
       {
 
-        double TMP_RR =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-        double TMP_GG =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_BB =
-            0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_RG =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_RB =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_GB =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][1].INDEXNO) {
             TMP_RR += (double)((YIN[i] - U_R2) * (YIN[i] - U_R2));
@@ -1297,8 +1277,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
         }
         // for(i=0,l=0;i<hsize*vsize;i++){
-        // if(*(index3+i)!=-1){
-        //*(iRRRR+l) = (int)(*(RRR+i)+0.5);
+        // if(index3[i]!=-1){
+        // iRRRR[l] = (int)(RRR[i]+0.5);
         // l++;
         //}
         //}
@@ -1312,16 +1292,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         int l2 = 0;
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][1].INDEXNO) {
-            *(RRRRRR + l2) = RRR[i];
-            *(GGGGGG + l2) = GGG[i];
-            *(BBBBBB + l2) = BBB[i];
+            RRRRRR[l2] = RRR[i];
+            GGGGGG[l2] = GGG[i];
+            BBBBBB[l2] = BBB[i];
             l2++;
           }
         }
         MAXX = -99.9e64;
         MINN = 99.9e64;
         for (int i = 0; i < l2; i++) {
-          if (MAXX < *(RRRRRR + i)) {
+          if (MAXX < RRRRRR[i]) {
             MAXX = RRRRRR[i];
           }
           if (MINN > RRRRRR[i]) {
@@ -1381,12 +1361,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // fprintf(stderr,"2kaimeheikin %d %d %d\n",U_R,U_G,U_B);
   // debug end
   {
-    double TMP_RR = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-    double TMP_GG = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-    double TMP_BB = 0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-    double TMP_RG = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-    double TMP_RB = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-    double TMP_GB = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+    double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+    double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+    double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+    double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+    double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+    double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
     for (int i = 0; i < hsize * vsize; i++) {
       if (INDEX[i] == j2) {
         TMP_RR += (double)((YIN[i] - U_R3) * (YIN[i] - U_R3));
@@ -1498,9 +1478,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   int k3 = 0, l3 = 0;
   for (int i = 0; i < hsize * vsize; i++) {
     if (INDEX[i] == j2) {
-      // ZZ = X1[0][Y]*((double)(((*(YIN+i)))) - ((double)(U_R)+(*XXX))) +
-      // X1[1][Y]*((double)(((*(UIN+i)))) - ((double)(U_G)+(*YYY))) +
-      // X1[2][Y]*((double)(((*(VIN+i)))) - ((double)(U_B)+(*ZZZ))) ;
+      // ZZ = X1[0][Y]*((double)(((YIN[i]))) - ((double)(U_R)+(*XXX))) +
+      // X1[1][Y]*((double)(((UIN[i]))) - ((double)(U_G)+(*YYY))) +
+      // X1[2][Y]*((double)(((VIN[i]))) - ((double)(U_B)+(*ZZZ))) ;
       // if(ZZ>=0.0){
       if (RRR33[i] >= DTHRESH) {
         INDEX[i] = DIVIDENUM - 1;
@@ -1520,7 +1500,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   // maxdistance tuika start
   // 0側のmaxdistanceを求める
-  auto U_RGB4 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0], &UIN[0], &VIN[0]);
+  auto U_RGB4 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
+                          &UIN[0], &VIN[0]);
   double U_R4 = std::get<0>(U_RGB4);
   double U_G4 = std::get<1>(U_RGB4);
   double U_B4 = std::get<2>(U_RGB4);
@@ -1618,18 +1599,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
 
       {
-        double TMP_RR =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-        double TMP_GG =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_BB =
-            0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_RG =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_RB =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_GB =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][0].INDEXNO) {
             TMP_RR += (double)((YIN[i] - U_R4) * (YIN[i] - U_R4));
@@ -1705,8 +1680,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
         }
         // for(i=0,l=0;i<hsize*vsize;i++){
-        // if(*(index3+i)!=-1){
-        //*(iRRRR+l) = (int)(*(RRR+i)+0.5);
+        // if(index3[i]!=-1){
+        // iRRRR[l] = (int)(RRR[i]+0.5);
         // l++;
         //}
         //}
@@ -1720,16 +1695,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         int l2 = 0;
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][0].INDEXNO) {
-            *(RRRRRR + l2) = RRR[i];
-            *(GGGGGG + l2) = GGG[i];
-            *(BBBBBB + l2) = BBB[i];
+            RRRRRR[l2] = RRR[i];
+            GGGGGG[l2] = GGG[i];
+            BBBBBB[l2] = BBB[i];
             l2++;
           }
         }
         MAXX = -99.9e64;
         MINN = 99.9e64;
         for (int i = 0; i < l2; i++) {
-          if (MAXX < *(RRRRRR + i)) {
+          if (MAXX < RRRRRR[i]) {
             MAXX = RRRRRR[i];
           }
           if (MINN > RRRRRR[i]) {
@@ -1750,7 +1725,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
 
   // 1側のmaxdistanceを求める
-  auto U_RGB5 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0], &UIN[0], &VIN[0]);
+  auto U_RGB5 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
+                          &UIN[0], &VIN[0]);
   double U_R5 = std::get<0>(U_RGB5);
   double U_G5 = std::get<1>(U_RGB5);
   double U_B5 = std::get<2>(U_RGB5);
@@ -1847,18 +1823,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       PT[MEN][1].MAXDISTANCE = TEMP;
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
       {
-        double TMP_RR =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-        double TMP_GG =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_BB =
-            0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_RG =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-        double TMP_RB =
-            0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-        double TMP_GB =
-            0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][1].INDEXNO) {
             TMP_RR += (double)((YIN[i] - U_R5) * (YIN[i] - U_R5));
@@ -1934,8 +1904,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
         }
         // for(i=0,l=0;i<hsize*vsize;i++){
-        // if(*(index3+i)!=-1){
-        //*(iRRRR+l) = (int)(*(RRR+i)+0.5);
+        // if(index3[i]!=-1){
+        // iRRRR[l] = (int)(RRR[i]+0.5);
         // l++;
         //}
         //}
@@ -1949,16 +1919,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         int l2 = 0;
         for (int i = 0; i < hsize * vsize; i++) {
           if (INDEX[i] == PT[MEN][1].INDEXNO) {
-            *(RRRRRR + l2) = RRR[i];
-            *(GGGGGG + l2) = GGG[i];
-            *(BBBBBB + l2) = BBB[i];
+            RRRRRR[l2] = RRR[i];
+            GGGGGG[l2] = GGG[i];
+            BBBBBB[l2] = BBB[i];
             l2++;
           }
         }
         MAXX = -99.9e64;
         MINN = 99.9e64;
         for (int i = 0; i < l2; i++) {
-          if (MAXX < *(RRRRRR + i)) {
+          if (MAXX < RRRRRR[i]) {
             MAXX = RRRRRR[i];
           }
           if (MINN > RRRRRR[i]) {
@@ -2051,7 +2021,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // debug end
     //次に分轄するブロックNO----- NUM
     //次に分轄するINDEXNO-------- PT[MEN][NUM].INDEXNO
-    auto U_RGB6 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][NUM].INDEXNO, &YIN[0], &UIN[0], &VIN[0]);
+    auto U_RGB6 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][NUM].INDEXNO,
+                            &YIN[0], &UIN[0], &VIN[0]);
     double U_R6 = std::get<0>(U_RGB6) / (double)PT[MEN][NUM].INDEXNUM;
     double U_G6 = std::get<1>(U_RGB6) / (double)PT[MEN][NUM].INDEXNUM;
     double U_B6 = std::get<2>(U_RGB6) / (double)PT[MEN][NUM].INDEXNUM;
@@ -2065,12 +2036,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // }
     // debug end
     {
-      double TMP_RR = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-      double TMP_GG = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-      double TMP_BB = 0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-      double TMP_RG = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-      double TMP_RB = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-      double TMP_GB = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+      double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+      double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+      double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+      double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+      double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+      double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
       for (int i = 0; i < hsize * vsize; i++) {
         if (INDEX[i] == PT[MEN][NUM].INDEXNO) {
           TMP_RR += (double)((YIN[i] - U_R6) * (YIN[i] - U_R6));
@@ -2201,9 +2172,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     int k2 = 0, l2 = 0;
     for (int i = 0; i < hsize * vsize; i++) {
       if (INDEX[i] == PT[MEN][NUM].INDEXNO) {
-        // ZZ = X1[0][Y]*((double)(((*(YIN+i)))) - ((double)(U_R)+(*XXX))) +
-        // X1[1][Y]*((double)(((*(UIN+i)))) - ((double)(U_G)+(*YYY))) +
-        // X1[2][Y]*((double)(((*(VIN+i)))) - ((double)(U_B)+(*ZZZ))) ;
+        // ZZ = X1[0][Y]*((double)(((YIN[i]))) - ((double)(U_R)+(*XXX))) +
+        // X1[1][Y]*((double)(((UIN[i]))) - ((double)(U_G)+(*YYY))) +
+        // X1[2][Y]*((double)(((VIN[i]))) - ((double)(U_B)+(*ZZZ))) ;
         // if(ZZ>=0.0){
         if (RRR33[i] >= DTHRESH) {
           INDEX[i] = DIVIDENUM - 1;
@@ -2236,7 +2207,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // max distance divide tuika
     // maxdistance tuika start
     // 0側のmaxdistanceを求める
-    auto U_RGB7 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0], &UIN[0], &VIN[0]);
+    auto U_RGB7 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO,
+                            &YIN[0], &UIN[0], &VIN[0]);
     double U_R7 = std::get<0>(U_RGB7);
     double U_G7 = std::get<1>(U_RGB7);
     double U_B7 = std::get<2>(U_RGB7);
@@ -2334,18 +2306,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         PT[MEN][0].MAXDISTANCE = TEMP;
       } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
         {
-          double TMP_RR =
-              0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-          double TMP_GG =
-              0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-          double TMP_BB =
-              0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-          double TMP_RG =
-              0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-          double TMP_RB =
-              0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-          double TMP_GB =
-              0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+          double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+          double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+          double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+          double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+          double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+          double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
           for (int i = 0; i < hsize * vsize; i++) {
             if (INDEX[i] == PT[MEN][0].INDEXNO) {
               TMP_RR += (double)((YIN[i] - U_R7) * (YIN[i] - U_R7));
@@ -2421,8 +2387,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
             kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
           }
           // for(i=0,l=0;i<hsize*vsize;i++){
-          // if(*(index3+i)!=-1){
-          //*(iRRRR+l) = (int)(*(RRR+i)+0.5);
+          // if(index3[i]!=-1){
+          // iRRRR[l] = (int)(RRR[i]+0.5);
           // l++;
           //}
           //}
@@ -2436,16 +2402,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           int l2 = 0;
           for (int i = 0; i < hsize * vsize; i++) {
             if (INDEX[i] == PT[MEN][0].INDEXNO) {
-              *(RRRRRR + l2) = RRR[i];
-              *(GGGGGG + l2) = GGG[i];
-              *(BBBBBB + l2) = BBB[i];
+              RRRRRR[l2] = RRR[i];
+              GGGGGG[l2] = GGG[i];
+              BBBBBB[l2] = BBB[i];
               l2++;
             }
           }
           MAXX = -99.9e64;
           MINN = 99.9e64;
           for (int i = 0; i < l2; i++) {
-            if (MAXX < *(RRRRRR + i)) {
+            if (MAXX < RRRRRR[i]) {
               MAXX = RRRRRR[i];
             }
             if (MINN > RRRRRR[i]) {
@@ -2468,7 +2434,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
 
     // 1側のmaxdistanceを求める
-    auto U_RGB8 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0], &UIN[0], &VIN[0]);
+    auto U_RGB8 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO,
+                            &YIN[0], &UIN[0], &VIN[0]);
     double U_R8 = std::get<0>(U_RGB8);
     double U_G8 = std::get<1>(U_RGB8);
     double U_B8 = std::get<2>(U_RGB8);
@@ -2564,18 +2531,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         PT[MEN][1].MAXDISTANCE = TEMP;
       } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
         {
-          double TMP_RR =
-              0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
-          double TMP_GG =
-              0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
-          double TMP_BB =
-              0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
-          double TMP_RG =
-              0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
-          double TMP_RB =
-              0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
-          double TMP_GB =
-              0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+          double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
+          double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
+          double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
+          double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
+          double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
+          double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
           for (int i = 0; i < hsize * vsize; i++) {
             if (INDEX[i] == PT[MEN][1].INDEXNO) {
               TMP_RR += (double)((YIN[i] - U_R8) * (YIN[i] - U_R8));
@@ -2651,8 +2612,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
             kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
           }
           // for(i=0,l=0;i<hsize*vsize;i++){
-          // if(*(index3+i)!=-1){
-          //*(iRRRR+l) = (int)(*(RRR+i)+0.5);
+          // if(index3[i]!=-1){
+          // iRRRR[l] = (int)(RRR[i]+0.5);
           // l++;
           //}
           //}
@@ -2666,16 +2627,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           int l2 = 0;
           for (int i = 0; i < hsize * vsize; i++) {
             if (INDEX[i] == PT[MEN][1].INDEXNO) {
-              *(RRRRRR + l2) = RRR[i];
-              *(GGGGGG + l2) = GGG[i];
-              *(BBBBBB + l2) = BBB[i];
+              RRRRRR[l2] = RRR[i];
+              GGGGGG[l2] = GGG[i];
+              BBBBBB[l2] = BBB[i];
               l2++;
             }
           }
           MAXX = -99.9e64;
           MINN = 99.9e64;
           for (int i = 0; i < l2; i++) {
-            if (MAXX < *(RRRRRR + i)) {
+            if (MAXX < RRRRRR[i]) {
               MAXX = RRRRRR[i];
             }
             if (MINN > RRRRRR[i]) {
@@ -2852,7 +2813,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         int k = 0;
         for (int i = 0; i < hsize * vsize; i++) {
           if (index3[i] != -1) {
-            if ((*(PALETGAZOU + i)) == j) {
+            if ((PALETGAZOU[i]) == j) {
               SUM_R[j] += (YIN[i]);
               SUM_G[j] += (UIN[i]);
               SUM_B[j] += (VIN[i]);
@@ -3454,9 +3415,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   //出力画像をつくる
   // for(i=0;i<hsize*vsize;i++){
-  // *(ROUT+i) = REDUCE_R[*(PALETGAZOU+i)];
-  // *(GOUT+i) = REDUCE_G[*(PALETGAZOU+i)];
-  // *(BOUT+i) = REDUCE_B[*(PALETGAZOU+i)];
+  // ROUT[i] = REDUCE_R[PALETGAZOU[i]];
+  // GOUT[i] = REDUCE_G[PALETGAZOU[i]];
+  // BOUT[i] = REDUCE_B[PALETGAZOU[i]];
   // }
 
   // Y_JYUSHIN[i] REDUCE_R[i]
@@ -3469,9 +3430,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     IIGIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
     IIBIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
     for (int i = 0; i < hsize * vsize; i++) {
-      *(IIRIN + i) = (*(RIN + i));
-      *(IIGIN + i) = (*(GIN + i));
-      *(IIBIN + i) = (*(BIN + i));
+      IIRIN[i] = RIN[i];
+      IIGIN[i] = GIN[i];
+      IIBIN[i] = BIN[i];
     }
     int mx = 0;
     if (dither == 0 || dither == 1) {
@@ -3503,15 +3464,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     int adr = 0;
     if (dither == 0 || dither == 1) {
       for (int i = 0; i < mx * 2; i++) {
-        *(errorR + i) = 0.0;
-        *(errorG + i) = 0.0;
-        *(errorB + i) = 0.0;
+        errorR[i] = 0.0;
+        errorG[i] = 0.0;
+        errorB[i] = 0.0;
       }
     } else if (dither == 2 || dither == 3) {
       for (int i = 0; i < mx * 3; i++) {
-        *(errorR + i) = 0.0;
-        *(errorG + i) = 0.0;
-        *(errorB + i) = 0.0;
+        errorR[i] = 0.0;
+        errorG[i] = 0.0;
+        errorB[i] = 0.0;
       }
     }
     for (int y = 0; y < vsize; y++) {
@@ -3521,37 +3482,37 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         } else if (dither == 2 || dither == 3) {
           adr = x + 2;
         }
-        // r= (*(IIRIN+x*vsize+y))+((*(errorR+adr))/16);
-        // g= (*(IIGIN+x*vsize+y))+((*(errorG+adr))/16);
-        // b= (*(IIBIN+x*vsize+y))+((*(errorB+adr))/16);
+        // r= (IIRIN[x*vsize+y])+((errorR[adr])/16);
+        // g= (IIGIN[x*vsize+y])+((errorG[adr])/16);
+        // b= (IIBIN[x*vsize+y])+((errorB[adr])/16);
         if (dither == 0) {
-          r = (double)(*(RIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (16.0 / (per + 0.0000001)) /*32.0*/);
-          g = (double)(*(GIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (16.0 / (per + 0.0000001)) /*32.0*/);
-          b = (double)(*(BIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (16.0 / (per + 0.0000001)) /*32.0*/);
+          r = (double)(RIN[x * vsize + y]) +
+              ((errorR[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+          g = (double)(GIN[x * vsize + y]) +
+              ((errorG[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+          b = (double)(BIN[x * vsize + y]) +
+              ((errorB[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
         } else if (dither == 1) {
-          r = (double)(*(RIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (4.0 / (per + 0.0000001)));
-          g = (double)(*(GIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (4.0 / (per + 0.0000001)));
-          b = (double)(*(BIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (4.0 / (per + 0.0000001)));
+          r = (double)(RIN[x * vsize + y]) +
+              ((errorR[adr]) / (4.0 / (per + 0.0000001)));
+          g = (double)(GIN[x * vsize + y]) +
+              ((errorG[adr]) / (4.0 / (per + 0.0000001)));
+          b = (double)(BIN[x * vsize + y]) +
+              ((errorB[adr]) / (4.0 / (per + 0.0000001)));
         } else if (dither == 2) {
-          r = (double)(*(RIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (42.0 / (per + 0.0000001)));
-          g = (double)(*(GIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (42.0 / (per + 0.0000001)));
-          b = (double)(*(BIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (42.0 / (per + 0.0000001)));
+          r = (double)(RIN[x * vsize + y]) +
+              ((errorR[adr]) / (42.0 / (per + 0.0000001)));
+          g = (double)(GIN[x * vsize + y]) +
+              ((errorG[adr]) / (42.0 / (per + 0.0000001)));
+          b = (double)(BIN[x * vsize + y]) +
+              ((errorB[adr]) / (42.0 / (per + 0.0000001)));
         } else if (dither == 3) {
-          r = (double)(*(RIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (48.0 / (per + 0.0000001)));
-          g = (double)(*(GIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (48.0 / (per + 0.0000001)));
-          b = (double)(*(BIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (48.0 / (per + 0.0000001)));
+          r = (double)(RIN[x * vsize + y]) +
+              ((errorR[adr]) / (48.0 / (per + 0.0000001)));
+          g = (double)(GIN[x * vsize + y]) +
+              ((errorG[adr]) / (48.0 / (per + 0.0000001)));
+          b = (double)(BIN[x * vsize + y]) +
+              ((errorB[adr]) / (48.0 / (per + 0.0000001)));
         }
         /* if(r > 255.0){
         r=255.0;
@@ -3571,9 +3532,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         if(b < 0.0){
         b=0.0;
         }*/
-        // r= (*(IIRIN+x*vsize+y));//+((*(errorR+adr))/16);
-        // g= (*(IIGIN+x*vsize+y));//+((*(errorG+adr))/16);
-        // b= (*(IIBIN+x*vsize+y));//+((*(errorB+adr))/16);
+        // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
+        // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
+        // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
         bst = 0;
         est = 999999.9e33;
         for (int i = 0; i < IROSUU; i++) {
@@ -3591,174 +3552,174 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         re = r - (double)(REDUCE_R[bst]);
         ge = g - (double)(REDUCE_G[bst]);
         be = b - (double)(REDUCE_B[bst]);
-        // (*(errorR+adr+1)) += re*7;
-        // (*(errorG+adr+1)) += ge*7;
-        // (*(errorB+adr+1)) += be*7;
+        // (errorR[adr+1]) += re*7;
+        // (errorG[adr+1]) += ge*7;
+        // (errorB[adr+1]) += be*7;
 
-        // (*(errorR+adr+mx-1)) += re*3;
-        // (*(errorG+adr+mx-1)) += ge*3;
-        // (*(errorB+adr+mx-1)) += be*3;
+        // (errorR[adr+mx-1]) += re*3;
+        // (errorG[adr+mx-1]) += ge*3;
+        // (errorB[adr+mx-1]) += be*3;
 
-        // (*(errorR+adr+mx)) += re*5;
-        // (*(errorG+adr+mx)) += ge*5;
-        // (*(errorB+adr+mx)) += be*5;
+        // (errorR[adr+mx]) += re*5;
+        // (errorG[adr+mx]) += ge*5;
+        // (errorB[adr+mx]) += be*5;
 
-        // (*(errorR+adr+mx+1)) += re;
-        // (*(errorG+adr+mx+1)) += ge;
-        // (*(errorB+adr+mx+1)) += be;
+        // (errorR[adr+mx+1]) += re;
+        // (errorG[adr+mx+1]) += ge;
+        // (errorB[adr+mx+1]) += be;
         if (dither == 0) {
-          (*(errorR + adr + 1)) += re * 7.0;
-          (*(errorG + adr + 1)) += ge * 7.0;
-          (*(errorB + adr + 1)) += be * 7.0;
+          (errorR[adr + 1]) += re * 7.0;
+          (errorG[adr + 1]) += ge * 7.0;
+          (errorB[adr + 1]) += be * 7.0;
 
-          (*(errorR + adr + mx - 1)) += re * 3.0;
-          (*(errorG + adr + mx - 1)) += ge * 3.0;
-          (*(errorB + adr + mx - 1)) += be * 3.0;
+          (errorR[adr + mx - 1]) += re * 3.0;
+          (errorG[adr + mx - 1]) += ge * 3.0;
+          (errorB[adr + mx - 1]) += be * 3.0;
 
-          (*(errorR + adr + mx)) += re * 5.0;
-          (*(errorG + adr + mx)) += ge * 5.0;
-          (*(errorB + adr + mx)) += be * 5.0;
+          (errorR[adr + mx]) += re * 5.0;
+          (errorG[adr + mx]) += ge * 5.0;
+          (errorB[adr + mx]) += be * 5.0;
 
-          (*(errorR + adr + mx + 1)) += re;
-          (*(errorG + adr + mx + 1)) += ge;
-          (*(errorB + adr + mx + 1)) += be;
-          // (*(errorR+adr+mx)) += re*1;
-          // (*(errorG+adr+mx)) += ge*1;
-          // (*(errorB+adr+mx)) += be*1;
+          (errorR[adr + mx + 1]) += re;
+          (errorG[adr + mx + 1]) += ge;
+          (errorB[adr + mx + 1]) += be;
+          // (errorR[adr+mx]) += re*1;
+          // (errorG[adr+mx]) += ge*1;
+          // (errorB[adr+mx]) += be*1;
         } else if (dither == 1) {
-          (*(errorR + adr + 1)) += re * 2.0;
-          (*(errorG + adr + 1)) += ge * 2.0;
-          (*(errorB + adr + 1)) += be * 2.0;
+          (errorR[adr + 1]) += re * 2.0;
+          (errorG[adr + 1]) += ge * 2.0;
+          (errorB[adr + 1]) += be * 2.0;
 
-          (*(errorR + adr + mx - 1)) += re;
-          (*(errorG + adr + mx - 1)) += ge;
-          (*(errorB + adr + mx - 1)) += be;
+          (errorR[adr + mx - 1]) += re;
+          (errorG[adr + mx - 1]) += ge;
+          (errorB[adr + mx - 1]) += be;
 
-          (*(errorR + adr + mx)) += re;
-          (*(errorG + adr + mx)) += ge;
-          (*(errorB + adr + mx)) += be;
+          (errorR[adr + mx]) += re;
+          (errorG[adr + mx]) += ge;
+          (errorB[adr + mx]) += be;
 
-          // (*(errorR+adr+mx+1)) += re;
-          // (*(errorG+adr+mx+1)) += ge;
-          // (*(errorB+adr+mx+1)) += be;
+          // (errorR[adr+mx+1]) += re;
+          // (errorG[adr+mx+1]) += ge;
+          // (errorB[adr+mx+1]) += be;
 
         } else if (dither == 2) {
-          (*(errorR + adr + 1)) += re * 8.0;
-          (*(errorG + adr + 1)) += ge * 8.0;
-          (*(errorB + adr + 1)) += be * 8.0;
-          (*(errorR + adr + 2)) += re * 4.0;
-          (*(errorG + adr + 2)) += ge * 4.0;
-          (*(errorB + adr + 2)) += be * 4.0;
-          (*(errorR + adr + mx - 2)) += re * 2.0;
-          (*(errorG + adr + mx - 2)) += ge * 2.0;
-          (*(errorB + adr + mx - 2)) += be * 2.0;
-          (*(errorR + adr + mx - 1)) += re * 4.0;
-          (*(errorG + adr + mx - 1)) += ge * 4.0;
-          (*(errorB + adr + mx - 1)) += be * 4.0;
-          (*(errorR + adr + mx)) += re * 8.0;
-          (*(errorG + adr + mx)) += ge * 8.0;
-          (*(errorB + adr + mx)) += be * 8.0;
-          (*(errorR + adr + mx + 1)) += re * 4.0;
-          (*(errorG + adr + mx + 1)) += ge * 4.0;
-          (*(errorB + adr + mx + 1)) += be * 4.0;
-          (*(errorR + adr + mx + 2)) += re * 2.0;
-          (*(errorG + adr + mx + 2)) += ge * 2.0;
-          (*(errorB + adr + mx + 2)) += be * 2.0;
+          (errorR[adr + 1]) += re * 8.0;
+          (errorG[adr + 1]) += ge * 8.0;
+          (errorB[adr + 1]) += be * 8.0;
+          (errorR[adr + 2]) += re * 4.0;
+          (errorG[adr + 2]) += ge * 4.0;
+          (errorB[adr + 2]) += be * 4.0;
+          (errorR[adr + mx - 2]) += re * 2.0;
+          (errorG[adr + mx - 2]) += ge * 2.0;
+          (errorB[adr + mx - 2]) += be * 2.0;
+          (errorR[adr + mx - 1]) += re * 4.0;
+          (errorG[adr + mx - 1]) += ge * 4.0;
+          (errorB[adr + mx - 1]) += be * 4.0;
+          (errorR[adr + mx]) += re * 8.0;
+          (errorG[adr + mx]) += ge * 8.0;
+          (errorB[adr + mx]) += be * 8.0;
+          (errorR[adr + mx + 1]) += re * 4.0;
+          (errorG[adr + mx + 1]) += ge * 4.0;
+          (errorB[adr + mx + 1]) += be * 4.0;
+          (errorR[adr + mx + 2]) += re * 2.0;
+          (errorG[adr + mx + 2]) += ge * 2.0;
+          (errorB[adr + mx + 2]) += be * 2.0;
 
-          (*(errorR + adr + mx * 2 - 2)) += re;
-          (*(errorG + adr + mx * 2 - 2)) += ge;
-          (*(errorB + adr + mx * 2 - 2)) += be;
-          (*(errorR + adr + mx * 2 - 1)) += re * 2.0;
-          (*(errorG + adr + mx * 2 - 1)) += ge * 2.0;
-          (*(errorB + adr + mx * 2 - 1)) += be * 2.0;
-          (*(errorR + adr + mx * 2)) += re * 4.0;
-          (*(errorG + adr + mx * 2)) += ge * 4.0;
-          (*(errorB + adr + mx * 2)) += be * 4.0;
-          (*(errorR + adr + mx * 2 + 1)) += re * 2.0;
-          (*(errorG + adr + mx * 2 + 1)) += ge * 2.0;
-          (*(errorB + adr + mx * 2 + 1)) += be * 2.0;
-          (*(errorR + adr + mx * 2 + 2)) += re;
-          (*(errorG + adr + mx * 2 + 2)) += ge;
-          (*(errorB + adr + mx * 2 + 2)) += be;
+          (errorR[adr + mx * 2 - 2]) += re;
+          (errorG[adr + mx * 2 - 2]) += ge;
+          (errorB[adr + mx * 2 - 2]) += be;
+          (errorR[adr + mx * 2 - 1]) += re * 2.0;
+          (errorG[adr + mx * 2 - 1]) += ge * 2.0;
+          (errorB[adr + mx * 2 - 1]) += be * 2.0;
+          (errorR[adr + mx * 2]) += re * 4.0;
+          (errorG[adr + mx * 2]) += ge * 4.0;
+          (errorB[adr + mx * 2]) += be * 4.0;
+          (errorR[adr + mx * 2 + 1]) += re * 2.0;
+          (errorG[adr + mx * 2 + 1]) += ge * 2.0;
+          (errorB[adr + mx * 2 + 1]) += be * 2.0;
+          (errorR[adr + mx * 2 + 2]) += re;
+          (errorG[adr + mx * 2 + 2]) += ge;
+          (errorB[adr + mx * 2 + 2]) += be;
         } else if (dither == 3) {
-          (*(errorR + adr + 1)) += re * 7.0;
-          (*(errorG + adr + 1)) += ge * 7.0;
-          (*(errorB + adr + 1)) += be * 7.0;
-          (*(errorR + adr + 2)) += re * 5.0;
-          (*(errorG + adr + 2)) += ge * 5.0;
-          (*(errorB + adr + 2)) += be * 5.0;
-          (*(errorR + adr + mx - 2)) += re * 3.0;
-          (*(errorG + adr + mx - 2)) += ge * 3.0;
-          (*(errorB + adr + mx - 2)) += be * 3.0;
-          (*(errorR + adr + mx - 1)) += re * 4.0;
-          (*(errorG + adr + mx - 1)) += ge * 4.0;
-          (*(errorB + adr + mx - 1)) += be * 4.0;
-          (*(errorR + adr + mx)) += re * 7.0;
-          (*(errorG + adr + mx)) += ge * 7.0;
-          (*(errorB + adr + mx)) += be * 7.0;
-          (*(errorR + adr + mx + 1)) += re * 5.0;
-          (*(errorG + adr + mx + 1)) += ge * 5.0;
-          (*(errorB + adr + mx + 1)) += be * 5.0;
-          (*(errorR + adr + mx + 2)) += re * 3.0;
-          (*(errorG + adr + mx + 2)) += ge * 3.0;
-          (*(errorB + adr + mx + 2)) += be * 3.0;
+          (errorR[adr + 1]) += re * 7.0;
+          (errorG[adr + 1]) += ge * 7.0;
+          (errorB[adr + 1]) += be * 7.0;
+          (errorR[adr + 2]) += re * 5.0;
+          (errorG[adr + 2]) += ge * 5.0;
+          (errorB[adr + 2]) += be * 5.0;
+          (errorR[adr + mx - 2]) += re * 3.0;
+          (errorG[adr + mx - 2]) += ge * 3.0;
+          (errorB[adr + mx - 2]) += be * 3.0;
+          (errorR[adr + mx - 1]) += re * 4.0;
+          (errorG[adr + mx - 1]) += ge * 4.0;
+          (errorB[adr + mx - 1]) += be * 4.0;
+          (errorR[adr + mx]) += re * 7.0;
+          (errorG[adr + mx]) += ge * 7.0;
+          (errorB[adr + mx]) += be * 7.0;
+          (errorR[adr + mx + 1]) += re * 5.0;
+          (errorG[adr + mx + 1]) += ge * 5.0;
+          (errorB[adr + mx + 1]) += be * 5.0;
+          (errorR[adr + mx + 2]) += re * 3.0;
+          (errorG[adr + mx + 2]) += ge * 3.0;
+          (errorB[adr + mx + 2]) += be * 3.0;
 
-          (*(errorR + adr + mx * 2 - 2)) += re;
-          (*(errorG + adr + mx * 2 - 2)) += ge;
-          (*(errorB + adr + mx * 2 - 2)) += be;
-          (*(errorR + adr + mx * 2 - 1)) += re * 3.0;
-          (*(errorG + adr + mx * 2 - 1)) += ge * 3.0;
-          (*(errorB + adr + mx * 2 - 1)) += be * 3.0;
-          (*(errorR + adr + mx * 2)) += re * 5.0;
-          (*(errorG + adr + mx * 2)) += ge * 5.0;
-          (*(errorB + adr + mx * 2)) += be * 5.0;
-          (*(errorR + adr + mx * 2 + 1)) += re * 3.0;
-          (*(errorG + adr + mx * 2 + 1)) += ge * 3.0;
-          (*(errorB + adr + mx * 2 + 1)) += be * 3.0;
-          (*(errorR + adr + mx * 2 + 2)) += re;
-          (*(errorG + adr + mx * 2 + 2)) += ge;
-          (*(errorB + adr + mx * 2 + 2)) += be;
+          (errorR[adr + mx * 2 - 2]) += re;
+          (errorG[adr + mx * 2 - 2]) += ge;
+          (errorB[adr + mx * 2 - 2]) += be;
+          (errorR[adr + mx * 2 - 1]) += re * 3.0;
+          (errorG[adr + mx * 2 - 1]) += ge * 3.0;
+          (errorB[adr + mx * 2 - 1]) += be * 3.0;
+          (errorR[adr + mx * 2]) += re * 5.0;
+          (errorG[adr + mx * 2]) += ge * 5.0;
+          (errorB[adr + mx * 2]) += be * 5.0;
+          (errorR[adr + mx * 2 + 1]) += re * 3.0;
+          (errorG[adr + mx * 2 + 1]) += ge * 3.0;
+          (errorB[adr + mx * 2 + 1]) += be * 3.0;
+          (errorR[adr + mx * 2 + 2]) += re;
+          (errorG[adr + mx * 2 + 2]) += ge;
+          (errorB[adr + mx * 2 + 2]) += be;
         }
 
-        (*(IIRIN + x * vsize + y)) = (REDUCE_R[bst]);
-        (*(IIGIN + x * vsize + y)) = (REDUCE_G[bst]);
-        (*(IIBIN + x * vsize + y)) = (REDUCE_B[bst]);
-        // (*(IIRIN+x*vsize+y)) = (int)(REDUCE_R[*(PALETGAZOU+x*vsize+y)]);
-        // (*(IIGIN+x*vsize+y)) = (int)(REDUCE_G[*(PALETGAZOU+x*vsize+y)]);
-        // (*(IIBIN+x*vsize+y)) = (int)(REDUCE_B[*(PALETGAZOU+x*vsize+y)]);
+        (IIRIN[x * vsize + y]) = (REDUCE_R[bst]);
+        (IIGIN[x * vsize + y]) = (REDUCE_G[bst]);
+        (IIBIN[x * vsize + y]) = (REDUCE_B[bst]);
+        // (IIRIN[x*vsize+y]) = (int)(REDUCE_R[PALETGAZOU[x*vsize+y]]);
+        // (IIGIN[x*vsize+y]) = (int)(REDUCE_G[PALETGAZOU[x*vsize+y]]);
+        // (IIBIN[x*vsize+y]) = (int)(REDUCE_B[PALETGAZOU[x*vsize+y]]);
       }
       if (dither == 0 || dither == 1) {
         for (int j = 0; j < mx; j++) {
-          *(errorR + j) = *(errorR + j + mx);
-          *(errorG + j) = *(errorG + j + mx);
-          *(errorB + j) = *(errorB + j + mx);
-          *(errorR + j + mx) = 0.0;
-          *(errorG + j + mx) = 0.0;
-          *(errorB + j + mx) = 0.0;
+          errorR[j] = errorR[j + mx];
+          errorG[j] = errorG[j + mx];
+          errorB[j] = errorB[j + mx];
+          errorR[j + mx] = 0.0;
+          errorG[j + mx] = 0.0;
+          errorB[j + mx] = 0.0;
         }
       } else if (dither == 2 || dither == 3) {
         for (int j = 0; j < mx; j++) {
-          *(errorR + j) = *(errorR + j + mx);
-          *(errorG + j) = *(errorG + j + mx);
-          *(errorB + j) = *(errorB + j + mx);
-          *(errorR + j + mx) = *(errorR + j + 2 * mx);
-          *(errorG + j + mx) = *(errorG + j + 2 * mx);
-          *(errorB + j + mx) = *(errorB + j + 2 * mx);
-          *(errorR + j + 2 * mx) = 0.0;
-          *(errorG + j + 2 * mx) = 0.0;
-          *(errorB + j + 2 * mx) = 0.0;
+          errorR[j] = errorR[j + mx];
+          errorG[j] = errorG[j + mx];
+          errorB[j] = errorB[j + mx];
+          errorR[j + mx] = errorR[j + 2 * mx];
+          errorG[j + mx] = errorG[j + 2 * mx];
+          errorB[j + mx] = errorB[j + 2 * mx];
+          errorR[j + 2 * mx] = 0.0;
+          errorG[j + 2 * mx] = 0.0;
+          errorB[j + 2 * mx] = 0.0;
         }
       }
     }
 
-    // *(PALETGAZOU+i)
+    // PALETGAZOU[i]
     // IIRINに画像データがはいっている
 
     for (int i = 0; i < hsize * vsize; i++) {
       for (int j = 0; j < IROSUU; j++) {
         if ((IIRIN[i] == (REDUCE_R[j])) && (IIGIN[i] == (REDUCE_G[j])) &&
             (IIBIN[i] == (REDUCE_B[j]))) {
-          *(PALETGAZOU + i) = j;
+          PALETGAZOU[i] = j;
         }
       }
     }
@@ -3776,9 +3737,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     IIGIN = (double *)malloc(sizeof(double) * hsize * vsize);
     IIBIN = (double *)malloc(sizeof(double) * hsize * vsize);
     for (int i = 0; i < hsize * vsize; i++) {
-      *(IIRIN + i) = (VIN[i]);
-      *(IIGIN + i) = (YIN[i]);
-      *(IIBIN + i) = (UIN[i]);
+      IIRIN[i] = (VIN[i]);
+      IIGIN[i] = (YIN[i]);
+      IIBIN[i] = (UIN[i]);
     }
     int mx = 0;
     if (dither == 0 || dither == 1) {
@@ -3810,15 +3771,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     int adr = 0;
     if (dither == 0 || dither == 1) {
       for (int i = 0; i < mx * 2; i++) {
-        *(errorR + i) = 0.0;
-        *(errorG + i) = 0.0;
-        *(errorB + i) = 0.0;
+        errorR[i] = 0.0;
+        errorG[i] = 0.0;
+        errorB[i] = 0.0;
       }
     } else if (dither == 2 || dither == 3) {
       for (int i = 0; i < mx * 3; i++) {
-        *(errorR + i) = 0.0;
-        *(errorG + i) = 0.0;
-        *(errorB + i) = 0.0;
+        errorR[i] = 0.0;
+        errorG[i] = 0.0;
+        errorB[i] = 0.0;
       }
     }
     printf("hoge1\n");
@@ -3829,37 +3790,37 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         } else if (dither == 2 || dither == 3) {
           adr = x + 2;
         }
-        // r= (*(IIRIN+x*vsize+y))+((*(errorR+adr))/16);
-        // g= (*(IIGIN+x*vsize+y))+((*(errorG+adr))/16);
-        // b= (*(IIBIN+x*vsize+y))+((*(errorB+adr))/16);
+        // r= (IIRIN[x*vsize+y])+((errorR[adr])/16);
+        // g= (IIGIN[x*vsize+y])+((errorG[adr])/16);
+        // b= (IIBIN[x*vsize+y])+((errorB[adr])/16);
         if (dither == 0) {
-          r = (double)(*(VIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (16.0 / (per + 0.0000001)) /*32.0*/);
-          g = (double)(*(YIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (16.0 / (per + 0.0000001)) /*32.0*/);
-          b = (double)(*(UIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (16.0 / (per + 0.0000001)) /*32.0*/);
+          r = (double)(VIN[x * vsize + y]) +
+              ((errorR[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+          g = (double)(YIN[x * vsize + y]) +
+              ((errorG[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+          b = (double)(UIN[x * vsize + y]) +
+              ((errorB[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
         } else if (dither == 1) {
-          r = (double)(*(VIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (4.0 / (per + 0.0000001)));
-          g = (double)(*(YIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (4.0 / (per + 0.0000001)));
-          b = (double)(*(UIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (4.0 / (per + 0.0000001)));
+          r = (double)(VIN[x * vsize + y]) +
+              ((errorR[adr]) / (4.0 / (per + 0.0000001)));
+          g = (double)(YIN[x * vsize + y]) +
+              ((errorG[adr]) / (4.0 / (per + 0.0000001)));
+          b = (double)(UIN[x * vsize + y]) +
+              ((errorB[adr]) / (4.0 / (per + 0.0000001)));
         } else if (dither == 2) {
-          r = (double)(*(VIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (42.0 / (per + 0.0000001)));
-          g = (double)(*(YIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (42.0 / (per + 0.0000001)));
-          b = (double)(*(UIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (42.0 / (per + 0.0000001)));
+          r = (double)(VIN[x * vsize + y]) +
+              ((errorR[adr]) / (42.0 / (per + 0.0000001)));
+          g = (double)(YIN[x * vsize + y]) +
+              ((errorG[adr]) / (42.0 / (per + 0.0000001)));
+          b = (double)(UIN[x * vsize + y]) +
+              ((errorB[adr]) / (42.0 / (per + 0.0000001)));
         } else if (dither == 3) {
-          r = (double)(*(VIN + x * vsize + y)) +
-              ((*(errorR + adr)) / (48.0 / (per + 0.0000001)));
-          g = (double)(*(YIN + x * vsize + y)) +
-              ((*(errorG + adr)) / (48.0 / (per + 0.0000001)));
-          b = (double)(*(UIN + x * vsize + y)) +
-              ((*(errorB + adr)) / (48.0 / (per + 0.0000001)));
+          r = (double)(VIN[x * vsize + y]) +
+              ((errorR[adr]) / (48.0 / (per + 0.0000001)));
+          g = (double)(YIN[x * vsize + y]) +
+              ((errorG[adr]) / (48.0 / (per + 0.0000001)));
+          b = (double)(UIN[x * vsize + y]) +
+              ((errorB[adr]) / (48.0 / (per + 0.0000001)));
         }
         /* if(r > 255.0){
         r=255.0;
@@ -3879,9 +3840,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         if(b < 0.0){
         b=0.0;
         }*/
-        // r= (*(IIRIN+x*vsize+y));//+((*(errorR+adr))/16);
-        // g= (*(IIGIN+x*vsize+y));//+((*(errorG+adr))/16);
-        // b= (*(IIBIN+x*vsize+y));//+((*(errorB+adr))/16);
+        // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
+        // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
+        // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
         bst = 0;
         est = 999999.9e33;
         for (int i = 0; i < IROSUU; i++) {
@@ -3899,167 +3860,167 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         re = r - (double)(V_JYUSHIN1[bst]);
         ge = g - (double)(Y_JYUSHIN1[bst]);
         be = b - (double)(U_JYUSHIN1[bst]);
-        // (*(errorR+adr+1)) += re*7;
-        // (*(errorG+adr+1)) += ge*7;
-        // (*(errorB+adr+1)) += be*7;
+        // (errorR[adr+1]) += re*7;
+        // (errorG[adr+1]) += ge*7;
+        // (errorB[adr+1]) += be*7;
 
-        // (*(errorR+adr+mx-1)) += re*3;
-        // (*(errorG+adr+mx-1)) += ge*3;
-        // (*(errorB+adr+mx-1)) += be*3;
+        // (errorR[adr+mx-1]) += re*3;
+        // (errorG[adr+mx-1]) += ge*3;
+        // (errorB[adr+mx-1]) += be*3;
 
-        // (*(errorR+adr+mx)) += re*5;
-        // (*(errorG+adr+mx)) += ge*5;
-        // (*(errorB+adr+mx)) += be*5;
+        // (errorR[adr+mx]) += re*5;
+        // (errorG[adr+mx]) += ge*5;
+        // (errorB[adr+mx]) += be*5;
 
-        // (*(errorR+adr+mx+1)) += re;
-        // (*(errorG+adr+mx+1)) += ge;
-        // (*(errorB+adr+mx+1)) += be;
+        // (errorR[adr+mx+1]) += re;
+        // (errorG[adr+mx+1]) += ge;
+        // (errorB[adr+mx+1]) += be;
         if (dither == 0) {
-          (*(errorR + adr + 1)) += re * 7.0;
-          (*(errorG + adr + 1)) += ge * 7.0;
-          (*(errorB + adr + 1)) += be * 7.0;
+          (errorR[adr + 1]) += re * 7.0;
+          (errorG[adr + 1]) += ge * 7.0;
+          (errorB[adr + 1]) += be * 7.0;
 
-          (*(errorR + adr + mx - 1)) += re * 3.0;
-          (*(errorG + adr + mx - 1)) += ge * 3.0;
-          (*(errorB + adr + mx - 1)) += be * 3.0;
+          (errorR[adr + mx - 1]) += re * 3.0;
+          (errorG[adr + mx - 1]) += ge * 3.0;
+          (errorB[adr + mx - 1]) += be * 3.0;
 
-          (*(errorR + adr + mx)) += re * 5.0;
-          (*(errorG + adr + mx)) += ge * 5.0;
-          (*(errorB + adr + mx)) += be * 5.0;
+          (errorR[adr + mx]) += re * 5.0;
+          (errorG[adr + mx]) += ge * 5.0;
+          (errorB[adr + mx]) += be * 5.0;
 
-          (*(errorR + adr + mx + 1)) += re;
-          (*(errorG + adr + mx + 1)) += ge;
-          (*(errorB + adr + mx + 1)) += be;
-          // (*(errorR+adr+mx)) += re*1;
-          // (*(errorG+adr+mx)) += ge*1;
-          // (*(errorB+adr+mx)) += be*1;
+          (errorR[adr + mx + 1]) += re;
+          (errorG[adr + mx + 1]) += ge;
+          (errorB[adr + mx + 1]) += be;
+          // (errorR[adr+mx]) += re*1;
+          // (errorG[adr+mx]) += ge*1;
+          // (errorB[adr+mx]) += be*1;
         } else if (dither == 1) {
-          (*(errorR + adr + 1)) += re * 2.0;
-          (*(errorG + adr + 1)) += ge * 2.0;
-          (*(errorB + adr + 1)) += be * 2.0;
+          (errorR[adr + 1]) += re * 2.0;
+          (errorG[adr + 1]) += ge * 2.0;
+          (errorB[adr + 1]) += be * 2.0;
 
-          (*(errorR + adr + mx - 1)) += re;
-          (*(errorG + adr + mx - 1)) += ge;
-          (*(errorB + adr + mx - 1)) += be;
+          (errorR[adr + mx - 1]) += re;
+          (errorG[adr + mx - 1]) += ge;
+          (errorB[adr + mx - 1]) += be;
 
-          (*(errorR + adr + mx)) += re;
-          (*(errorG + adr + mx)) += ge;
-          (*(errorB + adr + mx)) += be;
+          (errorR[adr + mx]) += re;
+          (errorG[adr + mx]) += ge;
+          (errorB[adr + mx]) += be;
 
-          // (*(errorR+adr+mx+1)) += re;
-          // (*(errorG+adr+mx+1)) += ge;
-          // (*(errorB+adr+mx+1)) += be;
+          // (errorR[adr+mx+1]) += re;
+          // (errorG[adr+mx+1]) += ge;
+          // (errorB[adr+mx+1]) += be;
 
         } else if (dither == 2) {
-          (*(errorR + adr + 1)) += re * 8.0;
-          (*(errorG + adr + 1)) += ge * 8.0;
-          (*(errorB + adr + 1)) += be * 8.0;
-          (*(errorR + adr + 2)) += re * 4.0;
-          (*(errorG + adr + 2)) += ge * 4.0;
-          (*(errorB + adr + 2)) += be * 4.0;
-          (*(errorR + adr + mx - 2)) += re * 2.0;
-          (*(errorG + adr + mx - 2)) += ge * 2.0;
-          (*(errorB + adr + mx - 2)) += be * 2.0;
-          (*(errorR + adr + mx - 1)) += re * 4.0;
-          (*(errorG + adr + mx - 1)) += ge * 4.0;
-          (*(errorB + adr + mx - 1)) += be * 4.0;
-          (*(errorR + adr + mx)) += re * 8.0;
-          (*(errorG + adr + mx)) += ge * 8.0;
-          (*(errorB + adr + mx)) += be * 8.0;
-          (*(errorR + adr + mx + 1)) += re * 4.0;
-          (*(errorG + adr + mx + 1)) += ge * 4.0;
-          (*(errorB + adr + mx + 1)) += be * 4.0;
-          (*(errorR + adr + mx + 2)) += re * 2.0;
-          (*(errorG + adr + mx + 2)) += ge * 2.0;
-          (*(errorB + adr + mx + 2)) += be * 2.0;
+          (errorR[adr + 1]) += re * 8.0;
+          (errorG[adr + 1]) += ge * 8.0;
+          (errorB[adr + 1]) += be * 8.0;
+          (errorR[adr + 2]) += re * 4.0;
+          (errorG[adr + 2]) += ge * 4.0;
+          (errorB[adr + 2]) += be * 4.0;
+          (errorR[adr + mx - 2]) += re * 2.0;
+          (errorG[adr + mx - 2]) += ge * 2.0;
+          (errorB[adr + mx - 2]) += be * 2.0;
+          (errorR[adr + mx - 1]) += re * 4.0;
+          (errorG[adr + mx - 1]) += ge * 4.0;
+          (errorB[adr + mx - 1]) += be * 4.0;
+          (errorR[adr + mx]) += re * 8.0;
+          (errorG[adr + mx]) += ge * 8.0;
+          (errorB[adr + mx]) += be * 8.0;
+          (errorR[adr + mx + 1]) += re * 4.0;
+          (errorG[adr + mx + 1]) += ge * 4.0;
+          (errorB[adr + mx + 1]) += be * 4.0;
+          (errorR[adr + mx + 2]) += re * 2.0;
+          (errorG[adr + mx + 2]) += ge * 2.0;
+          (errorB[adr + mx + 2]) += be * 2.0;
 
-          (*(errorR + adr + mx * 2 - 2)) += re;
-          (*(errorG + adr + mx * 2 - 2)) += ge;
-          (*(errorB + adr + mx * 2 - 2)) += be;
-          (*(errorR + adr + mx * 2 - 1)) += re * 2.0;
-          (*(errorG + adr + mx * 2 - 1)) += ge * 2.0;
-          (*(errorB + adr + mx * 2 - 1)) += be * 2.0;
-          (*(errorR + adr + mx * 2)) += re * 4.0;
-          (*(errorG + adr + mx * 2)) += ge * 4.0;
-          (*(errorB + adr + mx * 2)) += be * 4.0;
-          (*(errorR + adr + mx * 2 + 1)) += re * 2.0;
-          (*(errorG + adr + mx * 2 + 1)) += ge * 2.0;
-          (*(errorB + adr + mx * 2 + 1)) += be * 2.0;
-          (*(errorR + adr + mx * 2 + 2)) += re;
-          (*(errorG + adr + mx * 2 + 2)) += ge;
-          (*(errorB + adr + mx * 2 + 2)) += be;
+          (errorR[adr + mx * 2 - 2]) += re;
+          (errorG[adr + mx * 2 - 2]) += ge;
+          (errorB[adr + mx * 2 - 2]) += be;
+          (errorR[adr + mx * 2 - 1]) += re * 2.0;
+          (errorG[adr + mx * 2 - 1]) += ge * 2.0;
+          (errorB[adr + mx * 2 - 1]) += be * 2.0;
+          (errorR[adr + mx * 2]) += re * 4.0;
+          (errorG[adr + mx * 2]) += ge * 4.0;
+          (errorB[adr + mx * 2]) += be * 4.0;
+          (errorR[adr + mx * 2 + 1]) += re * 2.0;
+          (errorG[adr + mx * 2 + 1]) += ge * 2.0;
+          (errorB[adr + mx * 2 + 1]) += be * 2.0;
+          (errorR[adr + mx * 2 + 2]) += re;
+          (errorG[adr + mx * 2 + 2]) += ge;
+          (errorB[adr + mx * 2 + 2]) += be;
         } else if (dither == 3) {
-          (*(errorR + adr + 1)) += re * 7.0;
-          (*(errorG + adr + 1)) += ge * 7.0;
-          (*(errorB + adr + 1)) += be * 7.0;
-          (*(errorR + adr + 2)) += re * 5.0;
-          (*(errorG + adr + 2)) += ge * 5.0;
-          (*(errorB + adr + 2)) += be * 5.0;
-          (*(errorR + adr + mx - 2)) += re * 3.0;
-          (*(errorG + adr + mx - 2)) += ge * 3.0;
-          (*(errorB + adr + mx - 2)) += be * 3.0;
-          (*(errorR + adr + mx - 1)) += re * 4.0;
-          (*(errorG + adr + mx - 1)) += ge * 4.0;
-          (*(errorB + adr + mx - 1)) += be * 4.0;
-          (*(errorR + adr + mx)) += re * 7.0;
-          (*(errorG + adr + mx)) += ge * 7.0;
-          (*(errorB + adr + mx)) += be * 7.0;
-          (*(errorR + adr + mx + 1)) += re * 5.0;
-          (*(errorG + adr + mx + 1)) += ge * 5.0;
-          (*(errorB + adr + mx + 1)) += be * 5.0;
-          (*(errorR + adr + mx + 2)) += re * 3.0;
-          (*(errorG + adr + mx + 2)) += ge * 3.0;
-          (*(errorB + adr + mx + 2)) += be * 3.0;
+          (errorR[adr + 1]) += re * 7.0;
+          (errorG[adr + 1]) += ge * 7.0;
+          (errorB[adr + 1]) += be * 7.0;
+          (errorR[adr + 2]) += re * 5.0;
+          (errorG[adr + 2]) += ge * 5.0;
+          (errorB[adr + 2]) += be * 5.0;
+          (errorR[adr + mx - 2]) += re * 3.0;
+          (errorG[adr + mx - 2]) += ge * 3.0;
+          (errorB[adr + mx - 2]) += be * 3.0;
+          (errorR[adr + mx - 1]) += re * 4.0;
+          (errorG[adr + mx - 1]) += ge * 4.0;
+          (errorB[adr + mx - 1]) += be * 4.0;
+          (errorR[adr + mx]) += re * 7.0;
+          (errorG[adr + mx]) += ge * 7.0;
+          (errorB[adr + mx]) += be * 7.0;
+          (errorR[adr + mx + 1]) += re * 5.0;
+          (errorG[adr + mx + 1]) += ge * 5.0;
+          (errorB[adr + mx + 1]) += be * 5.0;
+          (errorR[adr + mx + 2]) += re * 3.0;
+          (errorG[adr + mx + 2]) += ge * 3.0;
+          (errorB[adr + mx + 2]) += be * 3.0;
 
-          (*(errorR + adr + mx * 2 - 2)) += re;
-          (*(errorG + adr + mx * 2 - 2)) += ge;
-          (*(errorB + adr + mx * 2 - 2)) += be;
-          (*(errorR + adr + mx * 2 - 1)) += re * 3.0;
-          (*(errorG + adr + mx * 2 - 1)) += ge * 3.0;
-          (*(errorB + adr + mx * 2 - 1)) += be * 3.0;
-          (*(errorR + adr + mx * 2)) += re * 5.0;
-          (*(errorG + adr + mx * 2)) += ge * 5.0;
-          (*(errorB + adr + mx * 2)) += be * 5.0;
-          (*(errorR + adr + mx * 2 + 1)) += re * 3.0;
-          (*(errorG + adr + mx * 2 + 1)) += ge * 3.0;
-          (*(errorB + adr + mx * 2 + 1)) += be * 3.0;
-          (*(errorR + adr + mx * 2 + 2)) += re;
-          (*(errorG + adr + mx * 2 + 2)) += ge;
-          (*(errorB + adr + mx * 2 + 2)) += be;
+          (errorR[adr + mx * 2 - 2]) += re;
+          (errorG[adr + mx * 2 - 2]) += ge;
+          (errorB[adr + mx * 2 - 2]) += be;
+          (errorR[adr + mx * 2 - 1]) += re * 3.0;
+          (errorG[adr + mx * 2 - 1]) += ge * 3.0;
+          (errorB[adr + mx * 2 - 1]) += be * 3.0;
+          (errorR[adr + mx * 2]) += re * 5.0;
+          (errorG[adr + mx * 2]) += ge * 5.0;
+          (errorB[adr + mx * 2]) += be * 5.0;
+          (errorR[adr + mx * 2 + 1]) += re * 3.0;
+          (errorG[adr + mx * 2 + 1]) += ge * 3.0;
+          (errorB[adr + mx * 2 + 1]) += be * 3.0;
+          (errorR[adr + mx * 2 + 2]) += re;
+          (errorG[adr + mx * 2 + 2]) += ge;
+          (errorB[adr + mx * 2 + 2]) += be;
         }
 
-        (*(IIRIN + x * vsize + y)) = (V_JYUSHIN1[bst]);
-        (*(IIGIN + x * vsize + y)) = (Y_JYUSHIN1[bst]);
-        (*(IIBIN + x * vsize + y)) = (U_JYUSHIN1[bst]);
-        // (*(IIRIN+x*vsize+y)) = (int)(REDUCE_R[*(PALETGAZOU+x*vsize+y)]);
-        // (*(IIGIN+x*vsize+y)) = (int)(REDUCE_G[*(PALETGAZOU+x*vsize+y)]);
-        // (*(IIBIN+x*vsize+y)) = (int)(REDUCE_B[*(PALETGAZOU+x*vsize+y)]);
+        (IIRIN[x * vsize + y]) = (V_JYUSHIN1[bst]);
+        (IIGIN[x * vsize + y]) = (Y_JYUSHIN1[bst]);
+        (IIBIN[x * vsize + y]) = (U_JYUSHIN1[bst]);
+        // (IIRIN[x*vsize+y]) = (int)(REDUCE_R[PALETGAZOU[x*vsize+y]]);
+        // (IIGIN[x*vsize+y]) = (int)(REDUCE_G[PALETGAZOU[x*vsize+y]]);
+        // (IIBIN[x*vsize+y]) = (int)(REDUCE_B[PALETGAZOU[x*vsize+y]]);
       }
       if (dither == 0 || dither == 1) {
         for (int j = 0; j < mx; j++) {
-          *(errorR + j) = *(errorR + j + mx);
-          *(errorG + j) = *(errorG + j + mx);
-          *(errorB + j) = *(errorB + j + mx);
-          *(errorR + j + mx) = 0.0;
-          *(errorG + j + mx) = 0.0;
-          *(errorB + j + mx) = 0.0;
+          errorR[j] = errorR[j + mx];
+          errorG[j] = errorG[j + mx];
+          errorB[j] = errorB[j + mx];
+          errorR[j + mx] = 0.0;
+          errorG[j + mx] = 0.0;
+          errorB[j + mx] = 0.0;
         }
       } else if (dither == 2 || dither == 3) {
         for (int j = 0; j < mx; j++) {
-          *(errorR + j) = *(errorR + j + mx);
-          *(errorG + j) = *(errorG + j + mx);
-          *(errorB + j) = *(errorB + j + mx);
-          *(errorR + j + mx) = *(errorR + j + 2 * mx);
-          *(errorG + j + mx) = *(errorG + j + 2 * mx);
-          *(errorB + j + mx) = *(errorB + j + 2 * mx);
-          *(errorR + j + 2 * mx) = 0.0;
-          *(errorG + j + 2 * mx) = 0.0;
-          *(errorB + j + 2 * mx) = 0.0;
+          errorR[j] = errorR[j + mx];
+          errorG[j] = errorG[j + mx];
+          errorB[j] = errorB[j + mx];
+          errorR[j + mx] = errorR[j + 2 * mx];
+          errorG[j + mx] = errorG[j + 2 * mx];
+          errorB[j + mx] = errorB[j + 2 * mx];
+          errorR[j + 2 * mx] = 0.0;
+          errorG[j + 2 * mx] = 0.0;
+          errorB[j + 2 * mx] = 0.0;
         }
       }
     }
 
-    // *(PALETGAZOU+i)
+    // PALETGAZOU[i]
     // IIRINに画像データがはいっている
 
     for (int i = 0; i < hsize * vsize; i++) {
