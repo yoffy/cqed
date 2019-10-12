@@ -33,9 +33,15 @@ struct StopWatch {
 #define BMULT 1.0 // 1.0*1.0
 #define EDGETH 30 // 25
 
-void JacobiSetup(int SIZE, const int *EDGE, int EDGE_NUM, const double *YIN,
-                 const double *UIN, const double *VIN,
-                 const std::tuple<double, double, double> &U_RGB, double **A);
+void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
+                          const double *YIN, const double *UIN,
+                          const double *VIN,
+                          const std::tuple<double, double, double> &U_RGB,
+                          double **A);
+void JacobiSetupEquals(int SIZE, const int *EDGE, int EDGE_NUM,
+                       const double *YIN, const double *UIN, const double *VIN,
+                       const std::tuple<double, double, double> &U_RGB,
+                       double **A);
 int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
            double **X1, double **X2);
 void LuvtoRGB(double L, double u, double v, double *R, double *G, double *B);
@@ -726,8 +732,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     X1[i1] = new double[n];
     X2[i1] = new double[n];
   }
-  JacobiSetup(hsize * vsize, &index3[0], -1, &YIN[0], &UIN[0], &VIN[0], U_RGB1,
-              A);
+  JacobiSetupNotEquals(hsize * vsize, &index3[0], -1, &YIN[0], &UIN[0], &VIN[0],
+                       U_RGB1, A);
   ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
   if (ind > 0) {
@@ -863,9 +869,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   double MAXD;
   double TEMP = 0.0;
   if (PT[MEN][0].INDEXNUM != 0) {
-    double U_R = std::get<0>(U_RGB) / (double)PT[MEN][0].INDEXNUM;
-    double U_G = std::get<1>(U_RGB) / (double)PT[MEN][0].INDEXNUM;
-    double U_B = std::get<2>(U_RGB) / (double)PT[MEN][0].INDEXNUM;
+    std::get<0>(U_RGB) /= (double)PT[MEN][0].INDEXNUM;
+    std::get<1>(U_RGB) /= (double)PT[MEN][0].INDEXNUM;
+    std::get<2>(U_RGB) /= (double)PT[MEN][0].INDEXNUM;
+    double U_R = std::get<0>(U_RGB);
+    double U_G = std::get<1>(U_RGB);
+    double U_B = std::get<2>(U_RGB);
     // U_R = (U_R>>RDIV);
     // U_G = (U_G>>GDIV);
     // U_B = (U_B>>BDIV);
@@ -953,51 +962,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
       PT[MEN][0].MAXDISTANCE = TEMP;
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
-
-      {
-        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-        for (int i = 0; i < hsize * vsize; i++) {
-          if (INDEX[i] == PT[MEN][0].INDEXNO) {
-            TMP_RR += (double)((YIN[i] - U_R) * (YIN[i] - U_R));
-            TMP_GG += (double)((UIN[i] - U_G) * (UIN[i] - U_G));
-            TMP_BB += (double)((VIN[i] - U_B) * (VIN[i] - U_B));
-            TMP_RG += (double)((YIN[i] - U_R) * (UIN[i] - U_G));
-            TMP_RB += (double)((YIN[i] - U_R) * (VIN[i] - U_B));
-            TMP_GB += (double)((UIN[i] - U_G) * (VIN[i] - U_B));
-          }
-        }
-        // debug start
-        // fprintf(stderr,"BUNSAN=%f %f\n",TMP_RR,TMP_RB);
-        // while(1);
-        // debug end
-        TMP_RR /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_GG /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_BB /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_RG /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_RB /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_GB /= (double)(PT[MEN][0].INDEXNUM);
-        // debug start
-        // fprintf(stderr,"BUNSAN=%f %f\n",TMP_RR,TMP_RB);
-        // while(1);
-        // debug end
-        A[0][0] = TMP_RR;
-        A[0][1] = TMP_RG;
-        A[1][0] = TMP_RG;
-        A[1][1] = TMP_GG;
-        A[2][2] = TMP_BB;
-        A[0][2] = TMP_RB;
-        A[2][0] = TMP_RB;
-        A[1][2] = TMP_GB;
-        A[2][1] = TMP_GB;
-      }
-
-      JacobiSetup(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
-                  &UIN[0], &VIN[0], U_RGB, A);
+      JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
+                        &UIN[0], &VIN[0], U_RGB, A);
       ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
@@ -1092,14 +1058,14 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // 1側のmaxdistanceを求める
   auto U_RGB2 =
       SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, YIN, UIN, VIN);
-  double U_R2 = std::get<0>(U_RGB2);
-  double U_G2 = std::get<1>(U_RGB2);
-  double U_B2 = std::get<2>(U_RGB2);
 
   if (PT[MEN][1].INDEXNUM != 0) {
-    U_R2 /= (double)PT[MEN][1].INDEXNUM;
-    U_G2 /= (double)PT[MEN][1].INDEXNUM;
-    U_B2 /= (double)PT[MEN][1].INDEXNUM;
+    std::get<0>(U_RGB2) /= (double)PT[MEN][1].INDEXNUM;
+    std::get<1>(U_RGB2) /= (double)PT[MEN][1].INDEXNUM;
+    std::get<2>(U_RGB2) /= (double)PT[MEN][1].INDEXNUM;
+    double U_R2 = std::get<0>(U_RGB2);
+    double U_G2 = std::get<1>(U_RGB2);
+    double U_B2 = std::get<2>(U_RGB2);
     // U_R = (U_R>>RDIV);
     // U_G = (U_G>>GDIV);
     // U_B = (U_B>>BDIV);
@@ -1187,49 +1153,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
       PT[MEN][1].MAXDISTANCE = TEMP;
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
-      {
-
-        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-        for (int i = 0; i < hsize * vsize; i++) {
-          if (INDEX[i] == PT[MEN][1].INDEXNO) {
-            TMP_RR += (double)((YIN[i] - U_R2) * (YIN[i] - U_R2));
-            TMP_GG += (double)((UIN[i] - U_G2) * (UIN[i] - U_G2));
-            TMP_BB += (double)((VIN[i] - U_B2) * (VIN[i] - U_B2));
-            TMP_RG += (double)((YIN[i] - U_R2) * (UIN[i] - U_G2));
-            TMP_RB += (double)((YIN[i] - U_R2) * (VIN[i] - U_B2));
-            TMP_GB += (double)((UIN[i] - U_G2) * (VIN[i] - U_B2));
-          }
-        }
-        // debug start
-        // fprintf(stderr,"BUNSAN=%f %f\n",TMP_RR,TMP_RB);
-        // while(1);
-        // debug end
-        TMP_RR /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_GG /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_BB /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_RG /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_RB /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_GB /= (double)(PT[MEN][1].INDEXNUM);
-        // debug start
-        // fprintf(stderr,"BUNSAN=%f %f\n",TMP_RR,TMP_RB);
-        // while(1);
-        // debug end
-        A[0][0] = TMP_RR;
-        A[0][1] = TMP_RG;
-        A[1][0] = TMP_RG;
-        A[1][1] = TMP_GG;
-        A[2][2] = TMP_BB;
-        A[0][2] = TMP_RB;
-        A[2][0] = TMP_RB;
-        A[1][2] = TMP_GB;
-        A[2][1] = TMP_GB;
-      }
-
+      JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
+                        &UIN[0], &VIN[0], U_RGB2, A);
       ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
@@ -1350,52 +1275,22 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
   }
 
-  auto U_RGB3 = SumEquals(hsize * vsize, &INDEX[0], j2, YIN, UIN, VIN);
-  double U_R3 = std::get<0>(U_RGB3) / (double)PT[MEN][j2].INDEXNUM;
-  double U_G3 = std::get<1>(U_RGB3) / (double)PT[MEN][j2].INDEXNUM;
-  double U_B3 = std::get<2>(U_RGB3) / (double)PT[MEN][j2].INDEXNUM;
+  auto U_RGB3 =
+      SumEquals(hsize * vsize, &INDEX[0], PT[MEN][j2].INDEXNO, YIN, UIN, VIN);
+  std::get<0>(U_RGB3) /= (double)PT[MEN][j2].INDEXNUM;
+  std::get<1>(U_RGB3) /= (double)PT[MEN][j2].INDEXNUM;
+  std::get<2>(U_RGB3) /= (double)PT[MEN][j2].INDEXNUM;
+  double U_R3 = std::get<0>(U_RGB3);
+  double U_G3 = std::get<1>(U_RGB3);
+  double U_B3 = std::get<2>(U_RGB3);
   // U_R = (U_R>>RDIV);
   // U_G = (U_G>>GDIV);
   // U_B = (U_B>>BDIV);
   // debug start
   // fprintf(stderr,"2kaimeheikin %d %d %d\n",U_R,U_G,U_B);
   // debug end
-  {
-    double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-    double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-    double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-    double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-    double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-    double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-    for (int i = 0; i < hsize * vsize; i++) {
-      if (INDEX[i] == j2) {
-        TMP_RR += (double)((YIN[i] - U_R3) * (YIN[i] - U_R3));
-        TMP_GG += (double)((UIN[i] - U_G3) * (UIN[i] - U_G3));
-        TMP_BB += (double)((VIN[i] - U_B3) * (VIN[i] - U_B3));
-        TMP_RG += (double)((YIN[i] - U_R3) * (UIN[i] - U_G3));
-        TMP_RB += (double)((YIN[i] - U_R3) * (VIN[i] - U_B3));
-        TMP_GB += (double)((UIN[i] - U_G3) * (VIN[i] - U_B3));
-      }
-    }
-    TMP_RR /= (double)(PT[MEN][j2].INDEXNUM);
-    TMP_GG /= (double)(PT[MEN][j2].INDEXNUM);
-    TMP_BB /= (double)(PT[MEN][j2].INDEXNUM);
-    TMP_RG /= (double)(PT[MEN][j2].INDEXNUM);
-    TMP_RB /= (double)(PT[MEN][j2].INDEXNUM);
-    TMP_GB /= (double)(PT[MEN][j2].INDEXNUM);
-
-    // 2番目の分轄の軸を求める（固有ベクトルの計算）
-    A[0][0] = TMP_RR;
-    A[0][1] = TMP_RG;
-    A[1][0] = TMP_RG;
-    A[1][1] = TMP_GG;
-    A[2][2] = TMP_BB;
-    A[0][2] = TMP_RB;
-    A[2][0] = TMP_RB;
-    A[1][2] = TMP_GB;
-    A[2][1] = TMP_GB;
-  }
-
+  JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][j2].INDEXNO, &YIN[0],
+                    &UIN[0], &VIN[0], U_RGB3, A);
   ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
   if (ind > 0) {
@@ -1502,13 +1397,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // 0側のmaxdistanceを求める
   auto U_RGB4 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
                           &UIN[0], &VIN[0]);
-  double U_R4 = std::get<0>(U_RGB4);
-  double U_G4 = std::get<1>(U_RGB4);
-  double U_B4 = std::get<2>(U_RGB4);
   if (PT[MEN][0].INDEXNUM != 0) {
-    U_R4 /= (double)PT[MEN][0].INDEXNUM;
-    U_G4 /= (double)PT[MEN][0].INDEXNUM;
-    U_B4 /= (double)PT[MEN][0].INDEXNUM;
+    std::get<0>(U_RGB4) /= (double)PT[MEN][0].INDEXNUM;
+    std::get<1>(U_RGB4) /= (double)PT[MEN][0].INDEXNUM;
+    std::get<2>(U_RGB4) /= (double)PT[MEN][0].INDEXNUM;
+    double U_R4 = std::get<0>(U_RGB4);
+    double U_G4 = std::get<1>(U_RGB4);
+    double U_B4 = std::get<2>(U_RGB4);
     // U_R = (U_R>>RDIV);
     // U_G = (U_G>>GDIV);
     // U_B = (U_B>>BDIV);
@@ -1597,43 +1492,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
       PT[MEN][0].MAXDISTANCE = TEMP;
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
-
-      {
-        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-        for (int i = 0; i < hsize * vsize; i++) {
-          if (INDEX[i] == PT[MEN][0].INDEXNO) {
-            TMP_RR += (double)((YIN[i] - U_R4) * (YIN[i] - U_R4));
-            TMP_GG += (double)((UIN[i] - U_G4) * (UIN[i] - U_G4));
-            TMP_BB += (double)((VIN[i] - U_B4) * (VIN[i] - U_B4));
-            TMP_RG += (double)((YIN[i] - U_R4) * (UIN[i] - U_G4));
-            TMP_RB += (double)((YIN[i] - U_R4) * (VIN[i] - U_B4));
-            TMP_GB += (double)((UIN[i] - U_G4) * (VIN[i] - U_B4));
-          }
-        }
-        TMP_RR /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_GG /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_BB /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_RG /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_RB /= (double)(PT[MEN][0].INDEXNUM);
-        TMP_GB /= (double)(PT[MEN][0].INDEXNUM);
-
-        // 2番目の分轄の軸を求める（固有ベクトルの計算）
-        A[0][0] = TMP_RR;
-        A[0][1] = TMP_RG;
-        A[1][0] = TMP_RG;
-        A[1][1] = TMP_GG;
-        A[2][2] = TMP_BB;
-        A[0][2] = TMP_RB;
-        A[2][0] = TMP_RB;
-        A[1][2] = TMP_GB;
-        A[2][1] = TMP_GB;
-      }
-
+      JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
+                        &UIN[0], &VIN[0], U_RGB4, A);
       ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
@@ -1727,14 +1587,14 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // 1側のmaxdistanceを求める
   auto U_RGB5 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
                           &UIN[0], &VIN[0]);
-  double U_R5 = std::get<0>(U_RGB5);
-  double U_G5 = std::get<1>(U_RGB5);
-  double U_B5 = std::get<2>(U_RGB5);
 
   if (PT[MEN][1].INDEXNUM != 0) {
-    U_R5 /= (double)PT[MEN][1].INDEXNUM;
-    U_G5 /= (double)PT[MEN][1].INDEXNUM;
-    U_B5 /= (double)PT[MEN][1].INDEXNUM;
+    std::get<0>(U_RGB5) /= (double)PT[MEN][1].INDEXNUM;
+    std::get<1>(U_RGB5) /= (double)PT[MEN][1].INDEXNUM;
+    std::get<2>(U_RGB5) /= (double)PT[MEN][1].INDEXNUM;
+    double U_R5 = std::get<0>(U_RGB5);
+    double U_G5 = std::get<1>(U_RGB5);
+    double U_B5 = std::get<2>(U_RGB5);
     // U_R = (U_R>>RDIV);
     // U_G = (U_G>>GDIV);
     // U_B = (U_B>>BDIV);
@@ -1822,42 +1682,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
       PT[MEN][1].MAXDISTANCE = TEMP;
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
-      {
-        double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-        double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-        double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-        double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-        for (int i = 0; i < hsize * vsize; i++) {
-          if (INDEX[i] == PT[MEN][1].INDEXNO) {
-            TMP_RR += (double)((YIN[i] - U_R5) * (YIN[i] - U_R5));
-            TMP_GG += (double)((UIN[i] - U_G5) * (UIN[i] - U_G5));
-            TMP_BB += (double)((VIN[i] - U_B5) * (VIN[i] - U_B5));
-            TMP_RG += (double)((YIN[i] - U_R5) * (UIN[i] - U_G5));
-            TMP_RB += (double)((YIN[i] - U_R5) * (VIN[i] - U_B5));
-            TMP_GB += (double)((UIN[i] - U_G5) * (VIN[i] - U_B5));
-          }
-        }
-        TMP_RR /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_GG /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_BB /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_RG /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_RB /= (double)(PT[MEN][1].INDEXNUM);
-        TMP_GB /= (double)(PT[MEN][1].INDEXNUM);
-
-        // 2番目の分轄の軸を求める（固有ベクトルの計算）
-        A[0][0] = TMP_RR;
-        A[0][1] = TMP_RG;
-        A[1][0] = TMP_RG;
-        A[1][1] = TMP_GG;
-        A[2][2] = TMP_BB;
-        A[0][2] = TMP_RB;
-        A[2][0] = TMP_RB;
-        A[1][2] = TMP_GB;
-        A[2][1] = TMP_GB;
-      }
-
+      JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
+                        &UIN[0], &VIN[0], U_RGB5, A);
       ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
@@ -2023,9 +1849,12 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     //次に分轄するINDEXNO-------- PT[MEN][NUM].INDEXNO
     auto U_RGB6 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][NUM].INDEXNO,
                             &YIN[0], &UIN[0], &VIN[0]);
-    double U_R6 = std::get<0>(U_RGB6) / (double)PT[MEN][NUM].INDEXNUM;
-    double U_G6 = std::get<1>(U_RGB6) / (double)PT[MEN][NUM].INDEXNUM;
-    double U_B6 = std::get<2>(U_RGB6) / (double)PT[MEN][NUM].INDEXNUM;
+    std::get<0>(U_RGB6) /= (double)PT[MEN][NUM].INDEXNUM;
+    std::get<1>(U_RGB6) /= (double)PT[MEN][NUM].INDEXNUM;
+    std::get<2>(U_RGB6) /= (double)PT[MEN][NUM].INDEXNUM;
+    double U_R6 = std::get<0>(U_RGB6);
+    double U_G6 = std::get<1>(U_RGB6);
+    double U_B6 = std::get<2>(U_RGB6);
     // U_R = (U_R>>RDIV);
     // U_G = (U_G>>GDIV);
     // U_B = (U_B>>BDIV);
@@ -2035,41 +1864,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // fprintf(stderr,"NUM= %d\n",NUM);
     // }
     // debug end
-    {
-      double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-      double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-      double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-      double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-      double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-      double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-      for (int i = 0; i < hsize * vsize; i++) {
-        if (INDEX[i] == PT[MEN][NUM].INDEXNO) {
-          TMP_RR += (double)((YIN[i] - U_R6) * (YIN[i] - U_R6));
-          TMP_GG += (double)((UIN[i] - U_G6) * (UIN[i] - U_G6));
-          TMP_BB += (double)((VIN[i] - U_B6) * (VIN[i] - U_B6));
-          TMP_RG += (double)((YIN[i] - U_R6) * (UIN[i] - U_G6));
-          TMP_RB += (double)((YIN[i] - U_R6) * (VIN[i] - U_B6));
-          TMP_GB += (double)((UIN[i] - U_G6) * (VIN[i] - U_B6));
-        }
-      }
-      TMP_RR /= (double)(PT[MEN][NUM].INDEXNUM);
-      TMP_GG /= (double)(PT[MEN][NUM].INDEXNUM);
-      TMP_BB /= (double)(PT[MEN][NUM].INDEXNUM);
-      TMP_RG /= (double)(PT[MEN][NUM].INDEXNUM);
-      TMP_RB /= (double)(PT[MEN][NUM].INDEXNUM);
-      TMP_GB /= (double)(PT[MEN][NUM].INDEXNUM);
-
-      // DIVIDENUM-1番目の分轄の軸を求める（固有ベクトルの計算）
-      A[0][0] = TMP_RR;
-      A[0][1] = TMP_RG;
-      A[1][0] = TMP_RG;
-      A[1][1] = TMP_GG;
-      A[2][2] = TMP_BB;
-      A[0][2] = TMP_RB;
-      A[2][0] = TMP_RB;
-      A[1][2] = TMP_GB;
-      A[2][1] = TMP_GB;
-    }
+    JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][NUM].INDEXNO, &YIN[0],
+                      &UIN[0], &VIN[0], U_RGB6, A);
     // debug start
     if (DIVIDENUM == 41) {
       for (int i = 0; i < 3; i++) {
@@ -2209,14 +2005,14 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // 0側のmaxdistanceを求める
     auto U_RGB7 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO,
                             &YIN[0], &UIN[0], &VIN[0]);
-    double U_R7 = std::get<0>(U_RGB7);
-    double U_G7 = std::get<1>(U_RGB7);
-    double U_B7 = std::get<2>(U_RGB7);
 
     if (PT[MEN][0].INDEXNUM != 0) {
-      U_R7 /= PT[MEN][0].INDEXNUM;
-      U_G7 /= PT[MEN][0].INDEXNUM;
-      U_B7 /= PT[MEN][0].INDEXNUM;
+      std::get<0>(U_RGB7) /= PT[MEN][0].INDEXNUM;
+      std::get<1>(U_RGB7) /= PT[MEN][0].INDEXNUM;
+      std::get<2>(U_RGB7) /= PT[MEN][0].INDEXNUM;
+      double U_R7 = std::get<0>(U_RGB7);
+      double U_G7 = std::get<1>(U_RGB7);
+      double U_B7 = std::get<2>(U_RGB7);
       // U_R = (U_R>>RDIV);
       // U_G = (U_G>>GDIV);
       // U_B = (U_B>>BDIV);
@@ -2305,41 +2101,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
         PT[MEN][0].MAXDISTANCE = TEMP;
       } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
-        {
-          double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-          double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-          double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-          double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-          double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-          double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-          for (int i = 0; i < hsize * vsize; i++) {
-            if (INDEX[i] == PT[MEN][0].INDEXNO) {
-              TMP_RR += (double)((YIN[i] - U_R7) * (YIN[i] - U_R7));
-              TMP_GG += (double)((UIN[i] - U_G7) * (UIN[i] - U_G7));
-              TMP_BB += (double)((VIN[i] - U_B7) * (VIN[i] - U_B7));
-              TMP_RG += (double)((YIN[i] - U_R7) * (UIN[i] - U_G7));
-              TMP_RB += (double)((YIN[i] - U_R7) * (VIN[i] - U_B7));
-              TMP_GB += (double)((UIN[i] - U_G7) * (VIN[i] - U_B7));
-            }
-          }
-          TMP_RR /= (double)(PT[MEN][0].INDEXNUM);
-          TMP_GG /= (double)(PT[MEN][0].INDEXNUM);
-          TMP_BB /= (double)(PT[MEN][0].INDEXNUM);
-          TMP_RG /= (double)(PT[MEN][0].INDEXNUM);
-          TMP_RB /= (double)(PT[MEN][0].INDEXNUM);
-          TMP_GB /= (double)(PT[MEN][0].INDEXNUM);
-
-          // DIVIDENUM-1番目の分轄の軸を求める（固有ベクトルの計算）
-          A[0][0] = TMP_RR;
-          A[0][1] = TMP_RG;
-          A[1][0] = TMP_RG;
-          A[1][1] = TMP_GG;
-          A[2][2] = TMP_BB;
-          A[0][2] = TMP_RB;
-          A[2][0] = TMP_RB;
-          A[1][2] = TMP_GB;
-          A[2][1] = TMP_GB;
-        }
+        JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
+                          &UIN[0], &VIN[0], U_RGB7, A);
         ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
         if (ind > 0) {
@@ -2436,13 +2199,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     // 1側のmaxdistanceを求める
     auto U_RGB8 = SumEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO,
                             &YIN[0], &UIN[0], &VIN[0]);
-    double U_R8 = std::get<0>(U_RGB8);
-    double U_G8 = std::get<1>(U_RGB8);
-    double U_B8 = std::get<2>(U_RGB8);
     if (PT[MEN][1].INDEXNUM != 0) {
-      U_R8 /= PT[MEN][1].INDEXNUM;
-      U_G8 /= PT[MEN][1].INDEXNUM;
-      U_B8 /= PT[MEN][1].INDEXNUM;
+      std::get<0>(U_RGB8) /= PT[MEN][1].INDEXNUM;
+      std::get<1>(U_RGB8) /= PT[MEN][1].INDEXNUM;
+      std::get<2>(U_RGB8) /= PT[MEN][1].INDEXNUM;
+      double U_R8 = std::get<0>(U_RGB8);
+      double U_G8 = std::get<1>(U_RGB8);
+      double U_B8 = std::get<2>(U_RGB8);
       // U_R = (U_R>>RDIV);
       // U_G = (U_G>>GDIV);
       // U_B = (U_B>>BDIV);
@@ -2530,41 +2293,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
         PT[MEN][1].MAXDISTANCE = TEMP;
       } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
-        {
-          double TMP_RR = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((RIN[i])>>RDIV)-U_R);
-          double TMP_GG = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((GIN[i])>>GDIV)-U_G);
-          double TMP_BB = 0.0; //(((BIN[i])>>BDIV)-U_B)*(((BIN[i])>>BDIV)-U_B);
-          double TMP_RG = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((GIN[i])>>GDIV)-U_G);
-          double TMP_RB = 0.0; //(((RIN[i])>>RDIV)-U_R)*(((BIN[i])>>BDIV)-U_B);
-          double TMP_GB = 0.0; //(((GIN[i])>>GDIV)-U_G)*(((BIN[i])>>BDIV)-U_B);
-          for (int i = 0; i < hsize * vsize; i++) {
-            if (INDEX[i] == PT[MEN][1].INDEXNO) {
-              TMP_RR += (double)((YIN[i] - U_R8) * (YIN[i] - U_R8));
-              TMP_GG += (double)((UIN[i] - U_G8) * (UIN[i] - U_G8));
-              TMP_BB += (double)((VIN[i] - U_B8) * (VIN[i] - U_B8));
-              TMP_RG += (double)((YIN[i] - U_R8) * (UIN[i] - U_G8));
-              TMP_RB += (double)((YIN[i] - U_R8) * (VIN[i] - U_B8));
-              TMP_GB += (double)((UIN[i] - U_G8) * (VIN[i] - U_B8));
-            }
-          }
-          TMP_RR /= (double)(PT[MEN][1].INDEXNUM);
-          TMP_GG /= (double)(PT[MEN][1].INDEXNUM);
-          TMP_BB /= (double)(PT[MEN][1].INDEXNUM);
-          TMP_RG /= (double)(PT[MEN][1].INDEXNUM);
-          TMP_RB /= (double)(PT[MEN][1].INDEXNUM);
-          TMP_GB /= (double)(PT[MEN][1].INDEXNUM);
-
-          // DIVIDENUM-1番目の分轄の軸を求める（固有ベクトルの計算）
-          A[0][0] = TMP_RR;
-          A[0][1] = TMP_RG;
-          A[1][0] = TMP_RG;
-          A[1][1] = TMP_GG;
-          A[2][2] = TMP_BB;
-          A[0][2] = TMP_RB;
-          A[2][0] = TMP_RB;
-          A[1][2] = TMP_GB;
-          A[2][1] = TMP_GB;
-        }
+        JacobiSetupEquals(hsize * vsize, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
+                          &UIN[0], &VIN[0], U_RGB8, A);
         ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
 
         if (ind > 0) {

@@ -9,11 +9,13 @@
 #include <vector>
 
 // EDGE[i] != EDGE_NUM である画素を使って A に共分散を設定する
-void JacobiSetup(int SIZE, const int *EDGE, int EDGE_NUM, const double *YIN,
-                 const double *UIN, const double *VIN,
-                 const std::tuple<double, double, double> &U_RGB, double **A) {
+void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
+                          const double *YIN, const double *UIN,
+                          const double *VIN,
+                          const std::tuple<double, double, double> &U_RGB,
+                          double **A) {
   // Aに分散共分散を入れる
-  int NUM_EDGES = 0;
+  int NUM_IGNORES = 0;
   double TMP_RR = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
   double TMP_GG = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
   double TMP_BB = 0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
@@ -25,7 +27,7 @@ void JacobiSetup(int SIZE, const int *EDGE, int EDGE_NUM, const double *YIN,
   double U_B = std::get<2>(U_RGB);
   for (int i = 0; i < SIZE; i++) {
     if (EDGE[i] == EDGE_NUM) {
-      NUM_EDGES++;
+      NUM_IGNORES++;
       continue;
     }
     TMP_RR += (YIN[i] - U_R) * (YIN[i] - U_R);
@@ -35,7 +37,54 @@ void JacobiSetup(int SIZE, const int *EDGE, int EDGE_NUM, const double *YIN,
     TMP_RB += (YIN[i] - U_R) * (VIN[i] - U_B);
     TMP_GB += (UIN[i] - U_G) * (VIN[i] - U_B);
   }
-  SIZE -= NUM_EDGES;
+  SIZE -= NUM_IGNORES;
+  TMP_RR /= SIZE;
+  TMP_GG /= SIZE;
+  TMP_BB /= SIZE;
+  TMP_RG /= SIZE;
+  TMP_RB /= SIZE;
+  TMP_GB /= SIZE;
+
+  A[0][0] = TMP_RR;
+  A[0][1] = TMP_RG;
+  A[1][0] = TMP_RG;
+  A[1][1] = TMP_GG;
+  A[2][2] = TMP_BB;
+  A[0][2] = TMP_RB;
+  A[2][0] = TMP_RB;
+  A[1][2] = TMP_GB;
+  A[2][1] = TMP_GB;
+}
+
+// EDGE[i] == EDGE_NUM である画素を使って A に共分散を設定する
+void JacobiSetupEquals(int SIZE, const int *EDGE, int EDGE_NUM,
+                       const double *YIN, const double *UIN, const double *VIN,
+                       const std::tuple<double, double, double> &U_RGB,
+                       double **A) {
+  // Aに分散共分散を入れる
+  int NUM_IGNORES = 0;
+  double TMP_RR = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
+  double TMP_GG = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(GIN+i))>>GDIV)-U_G);
+  double TMP_BB = 0.0; //(((*(BIN+i))>>BDIV)-U_B)*(((*(BIN+i))>>BDIV)-U_B);
+  double TMP_RG = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(GIN+i))>>GDIV)-U_G);
+  double TMP_RB = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(BIN+i))>>BDIV)-U_B);
+  double TMP_GB = 0.0; //(((*(GIN+i))>>GDIV)-U_G)*(((*(BIN+i))>>BDIV)-U_B);
+  double U_R = std::get<0>(U_RGB);
+  double U_G = std::get<1>(U_RGB);
+  double U_B = std::get<2>(U_RGB);
+  for (int i = 0; i < SIZE; i++) {
+    if (EDGE[i] != EDGE_NUM) {
+      NUM_IGNORES++;
+      continue;
+    }
+    TMP_RR += (YIN[i] - U_R) * (YIN[i] - U_R);
+    TMP_GG += (UIN[i] - U_G) * (UIN[i] - U_G);
+    TMP_BB += (VIN[i] - U_B) * (VIN[i] - U_B);
+    TMP_RG += (YIN[i] - U_R) * (UIN[i] - U_G);
+    TMP_RB += (YIN[i] - U_R) * (VIN[i] - U_B);
+    TMP_GB += (UIN[i] - U_G) * (VIN[i] - U_B);
+  }
+  SIZE -= NUM_IGNORES;
   TMP_RR /= SIZE;
   TMP_GG /= SIZE;
   TMP_BB /= SIZE;
