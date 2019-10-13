@@ -90,6 +90,12 @@ std::tuple<double, double, double> SumNotEquals(int SIZE, const int *INDEX,
                                                 int INDEX_NUM, const double *v1,
                                                 const double *v2,
                                                 const double *v3);
+int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
+                             const uint8_t *a1, const uint8_t *a2,
+                             const uint8_t *a3);
+int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
+                             const double *a1, const double *a2,
+                             const double *a3);
 
 struct palet //パレット構造体
 {
@@ -3188,9 +3194,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     double re = 0.0;
     double ge = 0.0;
     double be = 0.0;
-    double ee = 0.0;
-    double est = 9999999999.9e33;
-    int bst = 0;
     int adr = 0;
     if (dither == 0 || dither == 1) {
       for (int i = 0; i < mx * 2; i++) {
@@ -3265,17 +3268,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
         // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
         // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
-        bst = 0;
-        est = 999999.9e33;
-        for (int i = 0; i < IROSUU; i++) {
-          ee = (r - (double)(REDUCE_R[i])) * (r - (double)(REDUCE_R[i])) +
-               (g - (double)(REDUCE_G[i])) * (g - (double)(REDUCE_G[i])) +
-               (b - (double)(REDUCE_B[i])) * (b - (double)(REDUCE_B[i]));
-          if (est > ee) {
-            bst = i;
-            est = ee;
-          }
-        }
+        int bst = FindMinimumDistanceIndex(IROSUU, r, g, b, &REDUCE_R[0],
+                                           &REDUCE_G[0], &REDUCE_B[0]);
         // debug start
         // printf("gosa=%d\n",(int)est);
         // debug end
@@ -3495,9 +3489,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     double re = 0.0;
     double ge = 0.0;
     double be = 0.0;
-    double ee = 0.0;
-    double est = 9999999999.9e33;
-    int bst = 0;
     int adr = 0;
     if (dither == 0 || dither == 1) {
       for (int i = 0; i < mx * 2; i++) {
@@ -3573,17 +3564,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
         // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
         // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
-        bst = 0;
-        est = 999999.9e33;
-        for (int i = 0; i < IROSUU; i++) {
-          ee = (r - V_JYUSHIN1[i]) * (r - V_JYUSHIN1[i]) +
-               (g - Y_JYUSHIN1[i]) * (g - Y_JYUSHIN1[i]) +
-               (b - U_JYUSHIN1[i]) * (b - U_JYUSHIN1[i]); // yoffy
-          if (est > ee) {
-            bst = i;
-            est = ee;
-          }
-        }
+        int bst = FindMinimumDistanceIndex(IROSUU, r, g, b, &V_JYUSHIN1[0],
+                                           &Y_JYUSHIN1[0], &U_JYUSHIN1[0]);
         // debug start
         // printf("gosa=%d\n",(int)est);
         // debug end

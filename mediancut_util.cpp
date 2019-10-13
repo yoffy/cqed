@@ -1146,3 +1146,34 @@ std::tuple<double, double, double> SumNotEquals(int SIZE, const int *INDEX,
 
   return std::make_tuple(SUM1, SUM2, SUM3);
 }
+
+// (v - a)**2 の和が最小になるインデックスを探す
+int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
+                             const uint8_t *a1, const uint8_t *a2,
+                             const uint8_t *a3) {
+  int MIN_INDEX = 0;
+  double MIN_VALUE = DBL_MAX;
+  for (int i = 0; i < SIZE; i++) {
+    double d = Square(v1 - a1[i]) + Square(v2 - a2[i]) + Square(v3 - a3[i]);
+    if (d < MIN_VALUE) {
+      MIN_VALUE = d;
+      MIN_INDEX = i;
+    }
+  }
+  return MIN_INDEX;
+}
+// (v - a)**2 の和が最小になるインデックスを探す
+int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
+                             const double *a1, const double *a2,
+                             const double *a3) {
+  int MIN_INDEX = 0;
+  double MIN_VALUE = DBL_MAX;
+  for (int i = 0; i < SIZE; i++) {
+    double d = Square(v1 - a1[i]) + Square(v2 - a2[i]) + Square(v3 - a3[i]);
+    if (d < MIN_VALUE) {
+      MIN_VALUE = d;
+      MIN_INDEX = i;
+    }
+  }
+  return MIN_INDEX;
+}
