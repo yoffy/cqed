@@ -413,12 +413,8 @@ int main(int argc, char *argv[]) {
   }
 
   for (i = 0; i < vsize; i++) {
-    for (j = 0; j < hsize; j++) {
-      fwrite(PALETGAZOU + (vsize - 1 - i) * hsize + j, sizeof(unsigned char), 1,
-             fpw);
-      // fwrite(GOUT+j*vsize+vsize-1-i,sizeof(unsigned char),1,fpw);
-      // fwrite(ROUT+j*vsize+vsize-1-i,sizeof(unsigned char),1,fpw);
-    }
+    fwrite(PALETGAZOU + (vsize - 1 - i) * hsize, sizeof(unsigned char), hsize,
+           fpw);
     l = 4 - hsize % 4;
     if (l != 4) {
       for (k = 0; k < l; k++) {
