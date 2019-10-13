@@ -218,9 +218,6 @@ int main(int argc, char *argv[]) {
   int vsize;
   int filesizebyte;
   unsigned char *vin;
-  unsigned char *B;
-  unsigned char *G;
-  unsigned char *R;
   int i, j, k, l;
   unsigned char *BIN;
   unsigned char *GIN;
@@ -298,9 +295,9 @@ int main(int argc, char *argv[]) {
   /*******************************************/
 
   vin = (unsigned char *)malloc(sizeof(unsigned char) * (filesizebyte - 54));
-  B = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
-  G = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
-  R = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
+  BIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
+  GIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
+  RIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
   fseek(fpr, 54, SEEK_SET);
   if (fread(vin, sizeof(unsigned char), filesizebyte - 54, fpr) !=
       size_t(filesizebyte - 54)) {
@@ -316,11 +313,11 @@ int main(int argc, char *argv[]) {
 
   for (i = 0, k = 0; i < vsize; i++) {
     for (j = 0; j < hsize; j++) {
-      *(B + j * vsize + i) = *(vin + k);
+      *(BIN + j + (vsize-1-i) * hsize) = *(vin + k);
       k++;
-      *(G + j * vsize + i) = *(vin + k);
+      *(GIN + j + (vsize-1-i) * hsize) = *(vin + k);
       k++;
-      *(R + j * vsize + i) = *(vin + k);
+      *(RIN + j + (vsize-1-i) * hsize) = *(vin + k);
       k++;
     }
     if (((hsize * 3) % 4) == 1) {
@@ -337,28 +334,7 @@ int main(int argc, char *argv[]) {
     }
   }
   printf("hsize=%d,vsize=%d\n", hsize, vsize);
-  BIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
-  GIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
-  RIN = (unsigned char *)malloc(sizeof(unsigned char) * hsize * vsize);
 
-  /*******************************************/
-  /* */
-  /* RGB PIXEL SITAKARA HAIRETU KARA UEKARA */
-  /* */
-  /* HAIRETU NI NAOSU */
-  /* */
-  /*******************************************/
-
-  for (i = 0; i < vsize; i++) {
-    for (j = 0; j < hsize; j++) {
-      *(RIN + j * vsize + i) = *(R + j * vsize + vsize - 1 - i);
-      *(GIN + j * vsize + i) = *(G + j * vsize + vsize - 1 - i);
-      *(BIN + j * vsize + i) = *(B + j * vsize + vsize - 1 - i);
-    }
-  }
-  free(R);
-  free(G);
-  free(B);
   // BOUT = (unsigned char *)malloc(sizeof(unsigned char)*hsize*vsize);
   // GOUT = (unsigned char *)malloc(sizeof(unsigned char)*hsize*vsize);
   // ROUT = (unsigned char *)malloc(sizeof(unsigned char)*hsize*vsize);
@@ -438,7 +414,7 @@ int main(int argc, char *argv[]) {
 
   for (i = 0; i < vsize; i++) {
     for (j = 0; j < hsize; j++) {
-      fwrite(PALETGAZOU + j * vsize + vsize - 1 - i, sizeof(unsigned char), 1,
+      fwrite(PALETGAZOU + (vsize-1-i) * hsize + j, sizeof(unsigned char), 1,
              fpw);
       // fwrite(GOUT+j*vsize+vsize-1-i,sizeof(unsigned char),1,fpw);
       // fwrite(ROUT+j*vsize+vsize-1-i,sizeof(unsigned char),1,fpw);

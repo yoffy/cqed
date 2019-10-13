@@ -834,7 +834,7 @@ void SobelFilterHorizontal(int hsize, int vsize, const int *IN, int *OUT) {
           if (m > (vsize - 1)) {
             m = 2 * (vsize - 1) - m;
           }
-          OUT[j * vsize + i] += SOBEL2[3 * k + l] * IN[n * vsize + m];
+          OUT[i * hsize + j] += SOBEL2[3 * k + l] * IN[m * hsize + n];
         }
       }
     }
@@ -862,7 +862,7 @@ void SobelFilterVertical(int hsize, int vsize, const int *IN, int *OUT) {
           if (m > (vsize - 1)) {
             m = 2 * (vsize - 1) - m;
           }
-          OUT[j * vsize + i] += SOBEL[3 * k + l] * IN[n * vsize + m];
+          OUT[i * hsize + j] += SOBEL[3 * k + l] * IN[m * hsize + n];
         }
       }
     }
@@ -872,30 +872,28 @@ void SobelFilterVertical(int hsize, int vsize, const int *IN, int *OUT) {
 // エッジ検出
 //
 // 垂直に微分した後、絶対値が et 以上になるものをエッジとする。
-//
-// TODO: もともと変数名に Horizontal の H を冠していたが、実際の処理は垂直
 void PrewitAbsoluteFilterVertical(int hsize, int vsize, int et, const int *IN,
                                   int *OUT, int *EDGE) {
   for (int i = 0; i < vsize; i++) {
     for (int j = 0; j < hsize; j++) {
-      int k = j - 1;
-      int l = j + 1;
+      int k = i - 1;
+      int l = i + 1;
       if (k < 0) {
         k = -k;
       }
-      if (k > (hsize - 1)) {
-        k = 2 * (hsize - 1) - k; // TODO: 配列からはみ出してない?
+      if (k > (vsize - 1)) {
+        k = 2 * (vsize - 1) - k;
       }
       if (l < 0) {
         l = -l;
       }
-      if (l > (hsize - 1)) {
-        l = 2 * (hsize - 1) - l; // TODO: 配列からはみ出してない?
+      if (l > (vsize - 1)) {
+        l = 2 * (vsize - 1) - l;
       }
-      int DIFF = abs(IN[k * vsize + i] - IN[l * vsize + i]);
+      int DIFF = abs(IN[k * hsize + j] - IN[l * hsize + j]);
       bool IS_EDGE = (DIFF >= et);
-      OUT[j * vsize + i] = DIFF;
-      EDGE[j * vsize + i] = IS_EDGE;
+      OUT[i * hsize + j] = DIFF;
+      EDGE[i * hsize + j] = IS_EDGE;
     }
   }
 }
@@ -903,24 +901,22 @@ void PrewitAbsoluteFilterVertical(int hsize, int vsize, int et, const int *IN,
 // エッジ検出
 //
 // 水平に微分した後、絶対値が et 以上になるものをエッジとする。
-//
-// TODO: もともと変数名に Vertical の V を冠していたが、実際の処理は水平
 void PrewitAbsoluteFilterHorizontal(int hsize, int vsize, int et, const int *IN,
                                     int *OUT, int *EDGE) {
-  for (int i = 0; i < hsize; i++) {
-    for (int j = 0; j < vsize; j++) {
+  for (int i = 0; i < vsize; i++) {
+    for (int j = 0; j < hsize; j++) {
       int k = j - 1;
       int l = j + 1;
       if (k < 0) {
         k = -k;
       }
-      if (l > (vsize - 1)) {
-        l = 2 * (vsize - 1) - l;
+      if (l > (hsize - 1)) {
+        l = 2 * (hsize - 1) - l;
       }
-      int DIFF = abs(IN[i * vsize + l] - IN[i * vsize + k]);
+      int DIFF = abs(IN[i * hsize + l] - IN[i * hsize + k]);
       bool IS_EDGE = (DIFF >= et);
-      OUT[i * vsize + j] = DIFF;
-      EDGE[i * vsize + j] = IS_EDGE;
+      OUT[i * hsize + j] = DIFF;
+      EDGE[i * hsize + j] = IS_EDGE;
     }
   }
 }
@@ -929,24 +925,22 @@ void PrewitAbsoluteFilterHorizontal(int hsize, int vsize, int et, const int *IN,
 template <typename T> static inline T Square(T v) { return v * v; }
 
 // エッジ検出 (vvv == 0)
-int DetectEdge0(int hsize, int vsize, int et, const int *HHEDGER,
-                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
-                const int *HHEDGEB, const int *VVEDGEB, int *OUT) {
+int DetectEdge0(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
+                const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
+                const int *VVEDGEB, int *OUT) {
   int EDGE_GASOSUU = 0;
 
-  for (int i = 0; i < vsize; i++) {
-    for (int j = 0; j < hsize; j++) {
-      if ((sqrt(Square((float)HHEDGER[j * vsize + i]) +
-                Square((float)VVEDGER[j * vsize + i])) >= et * sqrt(2.0f)) ||
-          (sqrt(Square((float)HHEDGEG[j * vsize + i]) +
-                Square((float)VVEDGEG[j * vsize + i])) >= et * sqrt(2.0f)) ||
-          (sqrt(Square((float)HHEDGEB[j * vsize + i]) +
-                Square((float)VVEDGEB[j * vsize + i])) >= et * sqrt(2.0f))) {
-        OUT[j * vsize + i] = -1;
-        EDGE_GASOSUU++;
-      } else {
-        OUT[j * vsize + i] = 1;
-      }
+  for (int i = 0; i < SIZE; i++) {
+    if ((sqrt(Square((float)HHEDGER[i]) + Square((float)VVEDGER[i])) >=
+         et * sqrt(2.0f)) ||
+        (sqrt(Square((float)HHEDGEG[i]) + Square((float)VVEDGEG[i])) >=
+         et * sqrt(2.0f)) ||
+        (sqrt(Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i])) >=
+         et * sqrt(2.0f))) {
+      OUT[i] = -1;
+      EDGE_GASOSUU++;
+    } else {
+      OUT[i] = 1;
     }
   }
 
@@ -954,21 +948,18 @@ int DetectEdge0(int hsize, int vsize, int et, const int *HHEDGER,
 }
 
 // エッジ検出 (vvv == 1)
-int DetectEdge1(int hsize, int vsize, int et, const int *HHEDGER,
-                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
-                const int *HHEDGEB, const int *VVEDGEB, int *OUT) {
+int DetectEdge1(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
+                const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
+                const int *VVEDGEB, int *OUT) {
   int EDGE_GASOSUU = 0;
 
-  for (int i = 0; i < vsize; i++) {
-    for (int j = 0; j < hsize; j++) {
-      if (HHEDGER[j * vsize + i] >= et || VVEDGER[j * vsize + i] >= et ||
-          HHEDGEG[j * vsize + i] >= et || VVEDGEG[j * vsize + i] >= et ||
-          HHEDGEB[j * vsize + i] >= et || VVEDGEB[j * vsize + i] >= et) {
-        OUT[j * vsize + i] = -1;
-        EDGE_GASOSUU++;
-      } else {
-        OUT[j * vsize + i] = 1;
-      }
+  for (int i = 0; i < SIZE; i++) {
+    if (HHEDGER[i] >= et || VVEDGER[i] >= et || HHEDGEG[i] >= et ||
+        VVEDGEG[i] >= et || HHEDGEB[i] >= et || VVEDGEB[i] >= et) {
+      OUT[i] = -1;
+      EDGE_GASOSUU++;
+    } else {
+      OUT[i] = 1;
     }
   }
 
@@ -976,24 +967,20 @@ int DetectEdge1(int hsize, int vsize, int et, const int *HHEDGER,
 }
 
 // エッジ検出 (vvv == 6)
-int DetectEdge6(int hsize, int vsize, int et, const int *HHEDGER,
-                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
-                const int *HHEDGEB, const int *VVEDGEB, int *OUT) {
+int DetectEdge6(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
+                const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
+                const int *VVEDGEB, int *OUT) {
   int EDGE_GASOSUU = 0;
 
-  for (int i = 0; i < vsize; i++) {
-    for (int j = 0; j < hsize; j++) {
-      if (sqrt((Square((float)HHEDGER[j * vsize + i]) +
-                Square((float)VVEDGER[j * vsize + i])) +
-               (Square((float)HHEDGEG[j * vsize + i]) +
-                Square((float)VVEDGEG[j * vsize + i])) +
-               (Square((float)HHEDGEB[j * vsize + i]) +
-                Square((float)VVEDGEB[j * vsize + i]))) >= et * sqrt(6.0f)) {
-        OUT[j * vsize + i] = -1;
-        EDGE_GASOSUU++;
-      } else {
-        OUT[j * vsize + i] = 1;
-      }
+  for (int i = 0; i < SIZE; i++) {
+    if (sqrt((Square((float)HHEDGER[i]) + Square((float)VVEDGER[i])) +
+             (Square((float)HHEDGEG[i]) + Square((float)VVEDGEG[i])) +
+             (Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i]))) >=
+        et * sqrt(6.0f)) {
+      OUT[i] = -1;
+      EDGE_GASOSUU++;
+    } else {
+      OUT[i] = 1;
     }
   }
 
@@ -1001,21 +988,18 @@ int DetectEdge6(int hsize, int vsize, int et, const int *HHEDGER,
 }
 
 // エッジ検出 (vvv == 2)
-int DetectEdge2(int hsize, int vsize, const int *EDGER, const int *VEDGER,
-                const int *EDGEG, const int *VEDGEG, const int *EDGEB,
-                const int *VEDGEB, int *OUT) {
+int DetectEdge2(int SIZE, const int *EDGER, const int *VEDGER, const int *EDGEG,
+                const int *VEDGEG, const int *EDGEB, const int *VEDGEB,
+                int *OUT) {
   int EDGE_GASOSUU = 0;
 
-  for (int i = 0; i < vsize; i++) {
-    for (int j = 0; j < hsize; j++) {
-      if (EDGER[j * vsize + i] == 1 || EDGEG[j * vsize + i] == 1 ||
-          EDGEB[j * vsize + i] == 1 || VEDGER[j * vsize + i] == 1 ||
-          VEDGEG[j * vsize + i] == 1 || VEDGEB[j * vsize + i] == 1) {
-        OUT[j * vsize + i] = -1;
-        EDGE_GASOSUU++;
-      } else {
-        OUT[j * vsize + i] = 1;
-      }
+  for (int i = 0; i < SIZE; i++) {
+    if (EDGER[i] == 1 || EDGEG[i] == 1 || EDGEB[i] == 1 || VEDGER[i] == 1 ||
+        VEDGEG[i] == 1 || VEDGEB[i] == 1) {
+      OUT[i] = -1;
+      EDGE_GASOSUU++;
+    } else {
+      OUT[i] = 1;
     }
   }
 
@@ -1023,27 +1007,22 @@ int DetectEdge2(int hsize, int vsize, const int *EDGER, const int *VEDGER,
 }
 
 // エッジ検出 (vvv == 3)
-int DetectEdge3(int hsize, int vsize, int et, const int *HHEDGER,
-                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
-                const int *HHEDGEB, const int *VVEDGEB, int *OUT) {
+int DetectEdge3(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
+                const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
+                const int *VVEDGEB, int *OUT) {
   int EDGE_GASOSUU = 0;
 
-  for (int i = 0; i < vsize; i++) {
-    for (int j = 0; j < hsize; j++) {
-      if ((sqrt(Square((float)HHEDGER[j * vsize + i]) +
-                Square((float)VVEDGER[j * vsize + i])) >=
-           et * 4.0 * sqrt(2.0)) ||
-          (sqrt((Square((float)HHEDGEG[j * vsize + i]) +
-                 Square((float)VVEDGEG[j * vsize + i])) >=
-                et * 4.0 * sqrt(2.0)) ||
-           (sqrt(Square((float)HHEDGEB[j * vsize + i]) +
-                 Square((float)VVEDGEB[j * vsize + i])) >=
-            et * 4.0 * sqrt(2.0)))) {
-        OUT[j * vsize + i] = -1;
-        EDGE_GASOSUU++;
-      } else {
-        OUT[j * vsize + i] = 1;
-      }
+  for (int i = 0; i < SIZE; i++) {
+    if ((sqrt(Square((float)HHEDGER[i]) + Square((float)VVEDGER[i])) >=
+         et * 4.0 * sqrt(2.0)) ||
+        (sqrt((Square((float)HHEDGEG[i]) + Square((float)VVEDGEG[i])) >=
+              et * 4.0 * sqrt(2.0)) ||
+         (sqrt(Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i])) >=
+          et * 4.0 * sqrt(2.0)))) {
+      OUT[i] = -1;
+      EDGE_GASOSUU++;
+    } else {
+      OUT[i] = 1;
     }
   }
 
@@ -1051,25 +1030,20 @@ int DetectEdge3(int hsize, int vsize, int et, const int *HHEDGER,
 }
 
 // エッジ検出 (vvv == 5)
-int DetectEdge5(int hsize, int vsize, int et, const int *HHEDGER,
-                const int *VVEDGER, const int *HHEDGEG, const int *VVEDGEG,
-                const int *HHEDGEB, const int *VVEDGEB, int *OUT) {
+int DetectEdge5(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
+                const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
+                const int *VVEDGEB, int *OUT) {
   int EDGE_GASOSUU = 0;
 
-  for (int i = 0; i < vsize; i++) {
-    for (int j = 0; j < hsize; j++) {
-      if (sqrt((Square((float)HHEDGER[j * vsize + i]) +
-                Square((float)VVEDGER[j * vsize + i])) +
-               (Square((float)HHEDGEG[j * vsize + i]) +
-                Square((float)VVEDGEG[j * vsize + i])) +
-               (Square((float)HHEDGEB[j * vsize + i]) +
-                Square((float)VVEDGEB[j * vsize + i]))) >=
-          et * 4.0 * sqrt(6.0)) {
-        OUT[j * vsize + i] = -1;
-        EDGE_GASOSUU++;
-      } else {
-        OUT[j * vsize + i] = 1;
-      }
+  for (int i = 0; i < SIZE; i++) {
+    if (sqrt((Square((float)HHEDGER[i]) + Square((float)VVEDGER[i])) +
+             (Square((float)HHEDGEG[i]) + Square((float)VVEDGEG[i])) +
+             (Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i]))) >=
+        et * 4.0 * sqrt(6.0)) {
+      OUT[i] = -1;
+      EDGE_GASOSUU++;
+    } else {
+      OUT[i] = 1;
     }
   }
 
@@ -1077,29 +1051,23 @@ int DetectEdge5(int hsize, int vsize, int et, const int *HHEDGER,
 }
 
 // エッジ検出 (vvv == 4)
-int DetectEdge4(int hsize, int vsize, const int *HHEDGER, const int *VVEDGER,
+int DetectEdge4(int SIZE, const int *HHEDGER, const int *VVEDGER,
                 const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
                 const int *VVEDGEB, int *OUT, double *EDGERASISAY) {
-  for (int i = 0; i < vsize; i++) {
-    for (int j = 0; j < hsize; j++) {
-      OUT[j * vsize + i] = 1;
-      double REDGE = /*sqrt*/ (
-          Square((float)HHEDGER[j * vsize + i]) +
-          Square((float)VVEDGER[j * vsize + i])) /*/ 4.0 / sqrt(2.0)*/;
-      double GEDGE = /*sqrt*/ (
-          Square((float)HHEDGEG[j * vsize + i]) +
-          Square((float)VVEDGEG[j * vsize + i])) /*/ 4.0 / sqrt(2.0)*/;
-      double BEDGE = /*sqrt*/ (
-          Square((float)HHEDGEB[j * vsize + i]) +
-          Square((float)VVEDGEB[j * vsize + i])) /*/ 4.0 / sqrt(2.0)*/;
-      //            EDGERASISAY[j*vsize+i] =
-      //            0.29891*REDGE+0.58661*GEDGE+0.11448*BEDGE;
-      EDGERASISAY[j * vsize + i] =
-          (sqrt(REDGE + GEDGE + BEDGE)) / 4.0 / sqrt(6.0);
-      //            if(EDGERASISAY[j*vsize+i] > EDGERASMAX){
-      //                EDGERASMAX = EDGERASISAY[j*vsize+i];
-      //            }
-    }
+  for (int i = 0; i < SIZE; i++) {
+    OUT[i] = 1;
+    double REDGE = /*sqrt*/ (Square((float)HHEDGER[i]) +
+                             Square((float)VVEDGER[i])) /*/ 4.0 / sqrt(2.0)*/;
+    double GEDGE = /*sqrt*/ (Square((float)HHEDGEG[i]) +
+                             Square((float)VVEDGEG[i])) /*/ 4.0 / sqrt(2.0)*/;
+    double BEDGE = /*sqrt*/ (Square((float)HHEDGEB[i]) +
+                             Square((float)VVEDGEB[i])) /*/ 4.0 / sqrt(2.0)*/;
+    //            EDGERASISAY[i] =
+    //            0.29891*REDGE+0.58661*GEDGE+0.11448*BEDGE;
+    EDGERASISAY[i] = (sqrt(REDGE + GEDGE + BEDGE)) / 4.0 / sqrt(6.0);
+    //            if(EDGERASISAY[i] > EDGERASMAX){
+    //                EDGERASMAX = EDGERASISAY[i];
+    //            }
   }
 
   return 0;
