@@ -96,6 +96,9 @@ int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
 int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
                              const double *a1, const double *a2,
                              const double *a3);
+void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
+               const double *VIN, int PALET_SIZE, const double *Y_JYUSHIN,
+               const double *U_JYUSHIN, const double *V_JYUSHIN, uint8_t *OUT);
 
 struct palet //パレット構造体
 {
@@ -2608,25 +2611,10 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } // kmean loop end
   }
   printf("hoge3\n");
-  for (int i = 0; i < hsize * vsize; i++) {
-    // if(index3[i]!=-1){
-    double Z[IROSUU];
-    for (int j = 0; j < IROSUU; j++) {
-      Z[j] = (YIN[i] - Y_JYUSHIN[j]) * (YIN[i] - Y_JYUSHIN[j]) +
-             (UIN[i] - U_JYUSHIN[j]) * (UIN[i] - U_JYUSHIN[j]) +
-             (VIN[i] - V_JYUSHIN[j]) * (VIN[i] - V_JYUSHIN[j]);
-    }
-    double MINZ = DBL_MAX;
-    int X = 0;
-    for (int j = 0; j < IROSUU; j++) {
-      if (Z[j] < MINZ) { // yoffy
-        MINZ = Z[j];
-        X = j;
-      }
-    }
-    PALETGAZOU[i] = X;
-    // }
-  }
+
+  Dithering(hsize * vsize, &YIN[0], &UIN[0], &VIN[0], IROSUU, &Y_JYUSHIN[0],
+            &U_JYUSHIN[0], &V_JYUSHIN[0], &PALETGAZOU[0]);
+
   double *Y_JYUSHIN1;
   double *U_JYUSHIN1;
   double *V_JYUSHIN1;

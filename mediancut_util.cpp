@@ -1177,3 +1177,19 @@ int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
   }
   return MIN_INDEX;
 }
+
+// パレット番号に変換し OUT に出力する
+void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
+               const double *VIN, int PALET_SIZE, const double *Y_JYUSHIN,
+               const double *U_JYUSHIN, const double *V_JYUSHIN, uint8_t *OUT) {
+  for (int i = 0; i < IMAGE_SIZE; i++) {
+    double Z[PALET_SIZE];
+    for (int j = 0; j < PALET_SIZE; j++) {
+      Z[j] = (YIN[i] - Y_JYUSHIN[j]) * (YIN[i] - Y_JYUSHIN[j]) +
+             (UIN[i] - U_JYUSHIN[j]) * (UIN[i] - U_JYUSHIN[j]) +
+             (VIN[i] - V_JYUSHIN[j]) * (VIN[i] - V_JYUSHIN[j]);
+    }
+    ptrdiff_t MINZ_INDEX = std::min_element(&Z[0], &Z[PALET_SIZE]) - &Z[0];
+    OUT[i] = static_cast<uint8_t>(MINZ_INDEX);
+  }
+}
