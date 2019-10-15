@@ -147,7 +147,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   int m, p;
   int MEN;
   int NMEN;
-  int NUM;
   // unsigned char *PALETGAZOU;
   // unsigned char REDUCE_R[IROSUU];
   // unsigned char REDUCE_G[IROSUU];
@@ -158,10 +157,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   double HEIKIN_R[IROSUU];
   double HEIKIN_G[IROSUU];
   double HEIKIN_B[IROSUU];
-  int i1, ind;
+  int ind;
   double IGENMAX;
   int Y;
-  double MAXINDEXNUM;
   double PI = atan(1.0) * 4.0;
   int IMAGE_SIZE = hsize * vsize;
   // RGBをYUVに変換
@@ -1811,29 +1809,23 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   while (DIVIDENUM < 256) {
     StopWatch sw_before;
     //最大画素数のブロックをさがし、そのINDEXNOを調べる。
-    MAXINDEXNUM = -1.0;
+    int NUM = 0;
 
     if ((bun == 1) || (bun == 2) || (bun == 3) || (bun == 4) || (bun == 5)) {
-      for (int i = 0; i < DIVIDENUM; i++) {
-        // if(PT[MEN][i].INDEXNUM > MAXINDEXNUM)
-        // MAXINDEXNUM = PT[MEN][i].INDEXNUM;
-        if (PT[MEN][i].MAXDISTANCE /**PT[MEN][i].INDEXNUM*/ > MAXINDEXNUM) {
-          MAXINDEXNUM =
-              PT[MEN][i]
-                  .MAXDISTANCE /**PT[MEN][i].INDEXNUM*/; // max distance tuika
-          NUM = i;
-        }
-      }
+      const palet *MAX_ELEMENT =
+          std::max_element(&PT[MEN][0], &PT[MEN][DIVIDENUM],
+                           [](const palet &lhs, const palet &rhs) {
+                             return lhs.MAXDISTANCE < rhs.MAXDISTANCE;
+                           });
+      NUM = MAX_ELEMENT - &PT[MEN][0];
     } else if (bun == 0) {
-      for (int i = 0; i < DIVIDENUM; i++) {
-        // if(PT[MEN][i].INDEXNUM > MAXINDEXNUM)
-        // MAXINDEXNUM = PT[MEN][i].INDEXNUM;
-        if (PT[MEN][i].MAXDISTANCE * PT[MEN][i].INDEXNUM > MAXINDEXNUM) {
-          MAXINDEXNUM = PT[MEN][i].MAXDISTANCE *
-                        PT[MEN][i].INDEXNUM; // max distance tuika
-          NUM = i;
-        }
-      }
+      const palet *MAX_ELEMENT =
+          std::max_element(&PT[MEN][0], &PT[MEN][DIVIDENUM],
+                           [](const palet &lhs, const palet &rhs) {
+                             return lhs.MAXDISTANCE * lhs.INDEXNUM <
+                                    rhs.MAXDISTANCE * rhs.INDEXNUM;
+                           });
+      NUM = MAX_ELEMENT - &PT[MEN][0];
     }
 
     // debug start
