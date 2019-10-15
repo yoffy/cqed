@@ -2,11 +2,15 @@
 #include <assert.h>
 #include <float.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tuple>
 #include <vector>
+
+// 二乗
+template <typename T> static inline T Square(T v) { return v * v; }
 
 // EDGE[i] != EDGE_NUM である画素を使って A に共分散を設定する
 void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
@@ -507,7 +511,7 @@ int ohtsu(int NUM, const int *X) {
     }
     AVE2 /= (float)(TOTAL2);
 
-    HANTEI = (float)(TOTAL1) * (float)(TOTAL2) * (AVE1 - AVE2) * (AVE1 - AVE2);
+    HANTEI = (float)(TOTAL1) * (float)(TOTAL2)*Square(AVE1 - AVE2);
 
     if (MAX2 < HANTEI) {
       MAX2 = HANTEI;
@@ -653,7 +657,7 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z,
       XYZ_t AVE1 = STAT1[i].Mean();
       XYZ_t AVE2 = STAT2[i].Mean();
       HANTEI.value = (double)(STAT1[i].TOTAL) * (double)(STAT2[i].TOTAL) *
-                     (AVE1.X - AVE2.X) * (AVE1.X - AVE2.X);
+                     Square(AVE1.X - AVE2.X);
       HANTEI.index = i;
       if (THRESH_MAX < HANTEI) {
         THRESH_MAX = HANTEI;
@@ -740,7 +744,7 @@ int media(int NUM, const int *X) {
     }
     AVE2 /= (float)(TOTAL2);
 
-    HANTEI = (float)(TOTAL1) * (float)(TOTAL2) * (AVE1 - AVE2) * (AVE1 - AVE2);
+    HANTEI = (float)(TOTAL1) * (float)(TOTAL2)*Square(AVE1 - AVE2);
 
     if (MAX2 < HANTEI) {
       MAX2 = HANTEI;
@@ -920,9 +924,6 @@ void PrewitAbsoluteFilterHorizontal(int hsize, int vsize, int et, const int *IN,
     }
   }
 }
-
-// 二乗
-template <typename T> static inline T Square(T v) { return v * v; }
 
 // エッジ検出 (vvv == 0)
 int DetectEdge0(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
@@ -1153,9 +1154,8 @@ void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
   for (int i = 0; i < IMAGE_SIZE; i++) {
     double Z[PALET_SIZE];
     for (int j = 0; j < PALET_SIZE; j++) {
-      Z[j] = (YIN[i] - Y_JYUSHIN[j]) * (YIN[i] - Y_JYUSHIN[j]) +
-             (UIN[i] - U_JYUSHIN[j]) * (UIN[i] - U_JYUSHIN[j]) +
-             (VIN[i] - V_JYUSHIN[j]) * (VIN[i] - V_JYUSHIN[j]);
+      Z[j] = Square(YIN[i] - Y_JYUSHIN[j]) + Square(UIN[i] - U_JYUSHIN[j]) +
+             Square(VIN[i] - V_JYUSHIN[j]);
     }
     ptrdiff_t MINZ_INDEX = std::min_element(&Z[0], &Z[PALET_SIZE]) - &Z[0];
     OUT[i] = static_cast<uint8_t>(MINZ_INDEX);
