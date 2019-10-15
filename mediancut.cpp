@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
@@ -1352,13 +1353,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     iRRRR[i] = (int)(RR[i] + 0.5);
   }
   // ohtsu tuika end
-  if (MEN == 1) {
-    MEN = 0;
-    NMEN = 1;
-  } else {
-    MEN = 1;
-    NMEN = 0;
-  }
+
+  std::swap(MEN, NMEN);
+
   // ohtsu tuika start
   if (omh == 3 || omh == 4) {
     THRESH = ohtsu2(GASOSUU, &RR[0], &GG[0], &BB[0], omh);
@@ -1984,13 +1981,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         }
       }
     }
-    if (MEN == 1) {
-      MEN = 0;
-      NMEN = 1;
-    } else {
-      MEN = 1;
-      NMEN = 0;
-    }
+    std::swap(MEN, NMEN);
     PT[MEN][0].INDEXNO = PT[NMEN][NUM].INDEXNO;
     PT[MEN][1].INDEXNO = DIVIDENUM - 1;
     PT[MEN][0].INDEXNUM = l2;
