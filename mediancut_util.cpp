@@ -17,7 +17,7 @@ void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
                           const double *YIN, const double *UIN,
                           const double *VIN,
                           const std::tuple<double, double, double> &U_RGB,
-                          double **A) {
+                          double A[3][3]) {
   // Aに分散共分散を入れる
   int NUM_IGNORES = 0;
   double TMP_RR = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
@@ -64,7 +64,7 @@ void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
 void JacobiSetupEquals(int SIZE, const int *EDGE, int EDGE_NUM,
                        const double *YIN, const double *UIN, const double *VIN,
                        const std::tuple<double, double, double> &U_RGB,
-                       double **A) {
+                       double A[3][3]) {
   // Aに分散共分散を入れる
   int NUM_IGNORES = 0;
   double TMP_RR = 0.0; //(((*(RIN+i))>>RDIV)-U_R)*(((*(RIN+i))>>RDIV)-U_R);
@@ -107,8 +107,9 @@ void JacobiSetupEquals(int SIZE, const int *EDGE, int EDGE_NUM,
   A[2][1] = TMP_GB;
 }
 
-int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
-           double **X1, double **X2) {
+int Jacobi(int ct, double eps, double A[3][3], double A1[3][3], double A2[3][3],
+           double X1[3][3], double X2[3][3]) {
+  int n = 3;
   double max, s, t, v, sn, cs1;
   int k = 0, ind = 1, p = 0, q = 0;
   // 初期設定

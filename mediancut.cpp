@@ -1,5 +1,6 @@
 #include <float.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,13 +38,13 @@ void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
                           const double *YIN, const double *UIN,
                           const double *VIN,
                           const std::tuple<double, double, double> &U_RGB,
-                          double **A);
+                          double A[3][3]);
 void JacobiSetupEquals(int SIZE, const int *EDGE, int EDGE_NUM,
                        const double *YIN, const double *UIN, const double *VIN,
                        const std::tuple<double, double, double> &U_RGB,
-                       double **A);
-int Jacobi(int n, int ct, double eps, double **A, double **A1, double **A2,
-           double **X1, double **X2);
+                       double A[3][3]);
+int Jacobi(int ct, double eps, double A[3][3], double A1[3][3], double A2[3][3],
+           double X1[3][3], double X2[3][3]);
 void LuvtoRGB(double L, double u, double v, double *R, double *G, double *B);
 void RGBtoLuv(double R, double G, double B, double *L, double *u, double *v);
 void LABtoRGB(double L, double a, double b, double *R, double *G, double *B);
@@ -729,22 +730,14 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // U_R,U_G,U_Bは平均
   int ct = 1000;
   double eps = 1.0e-10;
-  int n = 3;
-  double **A = new double *[n];
-  double **A1 = new double *[n];
-  double **A2 = new double *[n];
-  double **X1 = new double *[n];
-  double **X2 = new double *[n];
-  for (i1 = 0; i1 < n; i1++) {
-    A[i1] = new double[n];
-    A1[i1] = new double[n];
-    A2[i1] = new double[n];
-    X1[i1] = new double[n];
-    X2[i1] = new double[n];
-  }
+  double A[3][3];
+  double A1[3][3];
+  double A2[3][3];
+  double X1[3][3];
+  double X2[3][3];
   JacobiSetupNotEquals(IMAGE_SIZE, &index3[0], -1, &YIN[0], &UIN[0], &VIN[0],
                        U_RGB1, A);
-  ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+  ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
   if (ind > 0) {
     fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -974,7 +967,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
       JacobiSetupEquals(IMAGE_SIZE, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
                         &UIN[0], &VIN[0], U_RGB, A);
-      ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+      ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
         fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -1165,7 +1158,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
       JacobiSetupEquals(IMAGE_SIZE, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
                         &UIN[0], &VIN[0], U_RGB2, A);
-      ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+      ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
         fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -1301,7 +1294,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // debug end
   JacobiSetupEquals(IMAGE_SIZE, &INDEX[0], PT[MEN][j2].INDEXNO, &YIN[0],
                     &UIN[0], &VIN[0], U_RGB3, A);
-  ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+  ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
   if (ind > 0) {
     fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -1504,7 +1497,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
       JacobiSetupEquals(IMAGE_SIZE, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
                         &UIN[0], &VIN[0], U_RGB4, A);
-      ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+      ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
         fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -1694,7 +1687,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
       JacobiSetupEquals(IMAGE_SIZE, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
                         &UIN[0], &VIN[0], U_RGB5, A);
-      ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+      ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
       if (ind > 0) {
         fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -1886,7 +1879,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
     }
     // debug end
-    ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+    ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
     if (ind > 0) {
       fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -2113,7 +2106,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
         JacobiSetupEquals(IMAGE_SIZE, &INDEX[0], PT[MEN][0].INDEXNO, &YIN[0],
                           &UIN[0], &VIN[0], U_RGB7, A);
-        ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+        ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
         if (ind > 0) {
           fprintf(stderr, "Jacobi syuusoku simasen!!\n");
@@ -2305,7 +2298,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       } else if (bun == 2 || bun == 3 || bun == 4 || bun == 5) {
         JacobiSetupEquals(IMAGE_SIZE, &INDEX[0], PT[MEN][1].INDEXNO, &YIN[0],
                           &UIN[0], &VIN[0], U_RGB8, A);
-        ind = Jacobi(3, ct, eps, A, A1, A2, X1, X2);
+        ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
         if (ind > 0) {
           fprintf(stderr, "Jacobi syuusoku simasen!!\n");
