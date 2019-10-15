@@ -1,19 +1,17 @@
+#include "mediancut_util.h"
+
 #include <algorithm>
 #include <assert.h>
 #include <float.h>
 #include <math.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <tuple>
-#include <vector>
 
 // 二乗
 template <typename T> static inline T Square(T v) { return v * v; }
 
-// EDGE[i] != EDGE_NUM である画素を使って A に共分散を設定する
-void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
+// PIXTYPES[i] != PIXTYPE である画素を使って A に共分散を設定する
+void JacobiSetupNotEquals(int SIZE, const int16_t *PIXTYPES, int16_t PIXTYPE,
                           const double *YIN, const double *UIN,
                           const double *VIN,
                           const std::tuple<double, double, double> &U_RGB,
@@ -30,7 +28,7 @@ void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
   double U_G = std::get<1>(U_RGB);
   double U_B = std::get<2>(U_RGB);
   for (int i = 0; i < SIZE; i++) {
-    if (EDGE[i] == EDGE_NUM) {
+    if (PIXTYPES[i] == PIXTYPE) {
       NUM_IGNORES++;
       continue;
     }
@@ -60,8 +58,8 @@ void JacobiSetupNotEquals(int SIZE, const int *EDGE, int EDGE_NUM,
   A[2][1] = TMP_GB;
 }
 
-// EDGE[i] == EDGE_NUM である画素を使って A に共分散を設定する
-void JacobiSetupEquals(int SIZE, const int *EDGE, int EDGE_NUM,
+// PIXTYPES[i] == PIXTYPES である画素を使って A に共分散を設定する
+void JacobiSetupEquals(int SIZE, const int16_t *PIXTYPES, int16_t PIXTYPE,
                        const double *YIN, const double *UIN, const double *VIN,
                        const std::tuple<double, double, double> &U_RGB,
                        double A[3][3]) {
@@ -77,7 +75,7 @@ void JacobiSetupEquals(int SIZE, const int *EDGE, int EDGE_NUM,
   double U_G = std::get<1>(U_RGB);
   double U_B = std::get<2>(U_RGB);
   for (int i = 0; i < SIZE; i++) {
-    if (EDGE[i] != EDGE_NUM) {
+    if (PIXTYPES[i] != PIXTYPE) {
       NUM_IGNORES++;
       continue;
     }
@@ -929,7 +927,7 @@ void PrewitAbsoluteFilterHorizontal(int hsize, int vsize, int et, const int *IN,
 // エッジ検出 (vvv == 0)
 int DetectEdge0(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
                 const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
-                const int *VVEDGEB, int *OUT) {
+                const int *VVEDGEB, int16_t *OUT) {
   int EDGE_GASOSUU = 0;
 
   for (int i = 0; i < SIZE; i++) {
@@ -939,10 +937,10 @@ int DetectEdge0(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
          et * sqrt(2.0f)) ||
         (sqrt(Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i])) >=
          et * sqrt(2.0f))) {
-      OUT[i] = -1;
+      OUT[i] = kEdgePixel;
       EDGE_GASOSUU++;
     } else {
-      OUT[i] = 1;
+      OUT[i] = kRegularPixel;
     }
   }
 
@@ -952,16 +950,16 @@ int DetectEdge0(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
 // エッジ検出 (vvv == 1)
 int DetectEdge1(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
                 const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
-                const int *VVEDGEB, int *OUT) {
+                const int *VVEDGEB, int16_t *OUT) {
   int EDGE_GASOSUU = 0;
 
   for (int i = 0; i < SIZE; i++) {
     if (HHEDGER[i] >= et || VVEDGER[i] >= et || HHEDGEG[i] >= et ||
         VVEDGEG[i] >= et || HHEDGEB[i] >= et || VVEDGEB[i] >= et) {
-      OUT[i] = -1;
+      OUT[i] = kEdgePixel;
       EDGE_GASOSUU++;
     } else {
-      OUT[i] = 1;
+      OUT[i] = kRegularPixel;
     }
   }
 
@@ -971,7 +969,7 @@ int DetectEdge1(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
 // エッジ検出 (vvv == 6)
 int DetectEdge6(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
                 const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
-                const int *VVEDGEB, int *OUT) {
+                const int *VVEDGEB, int16_t *OUT) {
   int EDGE_GASOSUU = 0;
 
   for (int i = 0; i < SIZE; i++) {
@@ -979,10 +977,10 @@ int DetectEdge6(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
              (Square((float)HHEDGEG[i]) + Square((float)VVEDGEG[i])) +
              (Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i]))) >=
         et * sqrt(6.0f)) {
-      OUT[i] = -1;
+      OUT[i] = kEdgePixel;
       EDGE_GASOSUU++;
     } else {
-      OUT[i] = 1;
+      OUT[i] = kRegularPixel;
     }
   }
 
@@ -992,16 +990,16 @@ int DetectEdge6(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
 // エッジ検出 (vvv == 2)
 int DetectEdge2(int SIZE, const int *EDGER, const int *VEDGER, const int *EDGEG,
                 const int *VEDGEG, const int *EDGEB, const int *VEDGEB,
-                int *OUT) {
+                int16_t *OUT) {
   int EDGE_GASOSUU = 0;
 
   for (int i = 0; i < SIZE; i++) {
     if (EDGER[i] == 1 || EDGEG[i] == 1 || EDGEB[i] == 1 || VEDGER[i] == 1 ||
         VEDGEG[i] == 1 || VEDGEB[i] == 1) {
-      OUT[i] = -1;
+      OUT[i] = kEdgePixel;
       EDGE_GASOSUU++;
     } else {
-      OUT[i] = 1;
+      OUT[i] = kRegularPixel;
     }
   }
 
@@ -1011,7 +1009,7 @@ int DetectEdge2(int SIZE, const int *EDGER, const int *VEDGER, const int *EDGEG,
 // エッジ検出 (vvv == 3)
 int DetectEdge3(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
                 const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
-                const int *VVEDGEB, int *OUT) {
+                const int *VVEDGEB, int16_t *OUT) {
   int EDGE_GASOSUU = 0;
 
   for (int i = 0; i < SIZE; i++) {
@@ -1021,10 +1019,10 @@ int DetectEdge3(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
               et * 4.0 * sqrt(2.0)) ||
          (sqrt(Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i])) >=
           et * 4.0 * sqrt(2.0)))) {
-      OUT[i] = -1;
+      OUT[i] = kEdgePixel;
       EDGE_GASOSUU++;
     } else {
-      OUT[i] = 1;
+      OUT[i] = kRegularPixel;
     }
   }
 
@@ -1034,7 +1032,7 @@ int DetectEdge3(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
 // エッジ検出 (vvv == 5)
 int DetectEdge5(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
                 const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
-                const int *VVEDGEB, int *OUT) {
+                const int *VVEDGEB, int16_t *OUT) {
   int EDGE_GASOSUU = 0;
 
   for (int i = 0; i < SIZE; i++) {
@@ -1042,10 +1040,10 @@ int DetectEdge5(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
              (Square((float)HHEDGEG[i]) + Square((float)VVEDGEG[i])) +
              (Square((float)HHEDGEB[i]) + Square((float)VVEDGEB[i]))) >=
         et * 4.0 * sqrt(6.0)) {
-      OUT[i] = -1;
+      OUT[i] = kEdgePixel;
       EDGE_GASOSUU++;
     } else {
-      OUT[i] = 1;
+      OUT[i] = kRegularPixel;
     }
   }
 
@@ -1055,9 +1053,9 @@ int DetectEdge5(int SIZE, int et, const int *HHEDGER, const int *VVEDGER,
 // エッジ検出 (vvv == 4)
 int DetectEdge4(int SIZE, const int *HHEDGER, const int *VVEDGER,
                 const int *HHEDGEG, const int *VVEDGEG, const int *HHEDGEB,
-                const int *VVEDGEB, int *OUT, double *EDGERASISAY) {
+                const int *VVEDGEB, int16_t *OUT, double *EDGERASISAY) {
   for (int i = 0; i < SIZE; i++) {
-    OUT[i] = 1;
+    OUT[i] = kRegularPixel;
     double REDGE = /*sqrt*/ (Square((float)HHEDGER[i]) +
                              Square((float)VVEDGER[i])) /*/ 4.0 / sqrt(2.0)*/;
     double GEDGE = /*sqrt*/ (Square((float)HHEDGEG[i]) +
@@ -1075,9 +1073,9 @@ int DetectEdge4(int SIZE, const int *HHEDGER, const int *VVEDGER,
   return 0;
 }
 
-// INDEX[i] == INDEX_NUM である画素の和
-std::tuple<double, double, double> SumEquals(int SIZE, const int *INDEX,
-                                             int INDEX_NUM, const double *v1,
+// PIXTYPES[i] == PIXTYPE である画素の和
+std::tuple<double, double, double> SumEquals(int SIZE, const int16_t *PIXTYPES,
+                                             int16_t PIXTYPE, const double *v1,
                                              const double *v2,
                                              const double *v3) {
   double SUM1 = 0;
@@ -1085,7 +1083,7 @@ std::tuple<double, double, double> SumEquals(int SIZE, const int *INDEX,
   double SUM3 = 0;
 
   for (int i = 0; i < SIZE; i++) {
-    if (INDEX[i] != INDEX_NUM) {
+    if (PIXTYPES[i] != PIXTYPE) {
       continue;
     }
     SUM1 += v1[i];
@@ -1096,17 +1094,16 @@ std::tuple<double, double, double> SumEquals(int SIZE, const int *INDEX,
   return std::make_tuple(SUM1, SUM2, SUM3);
 }
 
-// INDEX[i] != INDEX_NUM である画素の和
-std::tuple<double, double, double> SumNotEquals(int SIZE, const int *INDEX,
-                                                int INDEX_NUM, const double *v1,
-                                                const double *v2,
-                                                const double *v3) {
+// PIXTYPES[i] != PIXTYPE である画素の和
+std::tuple<double, double, double>
+SumNotEquals(int SIZE, const int16_t *PIXTYPES, int16_t PIXTYPE,
+             const double *v1, const double *v2, const double *v3) {
   double SUM1 = 0;
   double SUM2 = 0;
   double SUM3 = 0;
 
   for (int i = 0; i < SIZE; i++) {
-    if (INDEX[i] == INDEX_NUM) {
+    if (PIXTYPES[i] == PIXTYPE) {
       continue;
     }
     SUM1 += v1[i];
