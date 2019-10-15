@@ -161,7 +161,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   int i1, ind;
   double IGENMAX;
   int Y;
-  int *INDEX;
   double MAXINDEXNUM;
   double PI = atan(1.0) * 4.0;
   int IMAGE_SIZE = hsize * vsize;
@@ -525,7 +524,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   std::vector<int> VVEDGEG(IMAGE_SIZE);
   std::vector<int> VVEDGEB(IMAGE_SIZE);
 
-  std::vector<int> index3(IMAGE_SIZE);
+  std::vector<int> index3(IMAGE_SIZE); // IS_EDGE ? -1 : 1;
 
   int EDGE_GASOSUU = 0;
 
@@ -774,7 +773,6 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   double V[3];
   double MAXX, MINN;
   int THRESH = 0;
-  double DTHRESH;
   std::vector<double> RR(IMAGE_SIZE);
   std::vector<double> GG(IMAGE_SIZE);
   std::vector<double> BB(IMAGE_SIZE);
@@ -834,16 +832,15 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     THRESH = 0;
   }
   // while(1);
-  DTHRESH = (double)(THRESH);
+  double DTHRESH = (double)(THRESH);
   modoshi(V, DTHRESH, 0.0, 0.0, XXX, YYY, ZZZ);
 
   // MEN = 0,NMEN = 1
   PT[MEN][0].INDEXNO = 0;
   PT[MEN][1].INDEXNO = 1;
 
-  INDEX = (int *)malloc(sizeof(int) * IMAGE_SIZE);
-  // int kk;
-  // kk = k;
+  // index3[i] != -1 ? RRR[i] < DTHRESH : -1;
+  std::vector<int> INDEX(IMAGE_SIZE);
   for (int i = 0; i < IMAGE_SIZE; i++) {
     INDEX[i] = -1;
   }
