@@ -10,8 +10,8 @@
 // 0-255 はパレット番号。
 // 0 未満を特別な値として意味を持たせる。
 enum PixelType {
-  kRegularPixel = -2,      // !edge (旧index3 == 1)
-  kEdgePixel = -1,         //  edge (旧index3 == -1)
+  kRegularPixel = -2, // !edge (旧index3 == 1)
+  kEdgePixel = -1,    //  edge (旧index3 == -1)
   // 0-255 は !edge
 };
 
@@ -80,3 +80,11 @@ int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
 void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
                const double *VIN, int PALET_SIZE, const double *Y_JYUSHIN,
                const double *U_JYUSHIN, const double *V_JYUSHIN, uint8_t *OUT);
+void Dithering1(int hsize, int vsize, int dither, double per,
+                const uint8_t *RIN, const uint8_t *GIN, const uint8_t *BIN,
+                int PALET_SIZE, const uint8_t *REDUCE_R,
+                const uint8_t *REDUCE_G, const uint8_t *REDUCE_B, uint8_t *OUT);
+void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
+                const double *YIN, const double *UIN, int PALET_SIZE,
+                const double *V_JYUSHIN1, const double *Y_JYUSHIN1,
+                const double *U_JYUSHIN1, uint8_t *OUT);

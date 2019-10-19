@@ -1159,3 +1159,560 @@ void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
     OUT[i] = static_cast<uint8_t>(MINZ_INDEX);
   }
 }
+
+// パレット番号に変換し OUT に出力する (edon == 1)
+void Dithering1(int hsize, int vsize, int dither, double per,
+                const uint8_t *RIN, const uint8_t *GIN, const uint8_t *BIN,
+                int PALET_SIZE, const uint8_t *REDUCE_R,
+                const uint8_t *REDUCE_G, const uint8_t *REDUCE_B,
+                uint8_t *OUT) {
+  int IMAGE_SIZE = hsize * vsize;
+  std::vector<uint8_t> IIRIN(IMAGE_SIZE);
+  std::vector<uint8_t> IIGIN(IMAGE_SIZE);
+  std::vector<uint8_t> IIBIN(IMAGE_SIZE);
+  for (int i = 0; i < IMAGE_SIZE; i++) {
+    IIRIN[i] = RIN[i];
+    IIGIN[i] = GIN[i];
+    IIBIN[i] = BIN[i];
+  }
+  int mx = 0;
+  if (dither == 0 || dither == 1) {
+    mx = hsize + 2;
+  } else if (dither == 2 || dither == 3) {
+    mx = hsize + 4;
+  }
+  int ERROR_SIZE = 0;
+  if (dither == 0 || dither == 1) {
+    ERROR_SIZE = mx * 2;
+  } else if (dither == 2 || dither == 3) {
+    ERROR_SIZE = mx * 3;
+  }
+  std::vector<double> errorR(ERROR_SIZE);
+  std::vector<double> errorG(ERROR_SIZE);
+  std::vector<double> errorB(ERROR_SIZE);
+  double r = 0.0;
+  double g = 0.0;
+  double b = 0.0;
+  double re = 0.0;
+  double ge = 0.0;
+  double be = 0.0;
+  int adr = 0;
+  for (int y = 0; y < vsize; y++) {
+    for (int x = 0; x < hsize; x++) {
+      if (dither == 0 || dither == 1) {
+        adr = x + 1;
+      } else if (dither == 2 || dither == 3) {
+        adr = x + 2;
+      }
+      // r= (IIRIN[x*vsize+y])+((errorR[adr])/16);
+      // g= (IIGIN[x*vsize+y])+((errorG[adr])/16);
+      // b= (IIBIN[x*vsize+y])+((errorB[adr])/16);
+      if (dither == 0) {
+        r = (double)(RIN[x + y * hsize]) +
+            ((errorR[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+        g = (double)(GIN[x + y * hsize]) +
+            ((errorG[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+        b = (double)(BIN[x + y * hsize]) +
+            ((errorB[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+      } else if (dither == 1) {
+        r = (double)(RIN[x + y * hsize]) +
+            ((errorR[adr]) / (4.0 / (per + 0.0000001)));
+        g = (double)(GIN[x + y * hsize]) +
+            ((errorG[adr]) / (4.0 / (per + 0.0000001)));
+        b = (double)(BIN[x + y * hsize]) +
+            ((errorB[adr]) / (4.0 / (per + 0.0000001)));
+      } else if (dither == 2) {
+        r = (double)(RIN[x + y * hsize]) +
+            ((errorR[adr]) / (42.0 / (per + 0.0000001)));
+        g = (double)(GIN[x + y * hsize]) +
+            ((errorG[adr]) / (42.0 / (per + 0.0000001)));
+        b = (double)(BIN[x + y * hsize]) +
+            ((errorB[adr]) / (42.0 / (per + 0.0000001)));
+      } else if (dither == 3) {
+        r = (double)(RIN[x + y * hsize]) +
+            ((errorR[adr]) / (48.0 / (per + 0.0000001)));
+        g = (double)(GIN[x + y * hsize]) +
+            ((errorG[adr]) / (48.0 / (per + 0.0000001)));
+        b = (double)(BIN[x + y * hsize]) +
+            ((errorB[adr]) / (48.0 / (per + 0.0000001)));
+      }
+      /* if(r > 255.0){
+      r=255.0;
+      }
+      if(r < 0.0){
+      r=0.0;
+      }
+      if(g > 255.0){
+      g=255.0;
+      }
+      if(g < 0.0){
+      g=0.0;
+      }
+      if(b > 255.0){
+      b=255.0;
+      }
+      if(b < 0.0){
+      b=0.0;
+      }*/
+      // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
+      // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
+      // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
+      int bst = FindMinimumDistanceIndex(PALET_SIZE, r, g, b, &REDUCE_R[0],
+                                         &REDUCE_G[0], &REDUCE_B[0]);
+      // debug start
+      // printf("gosa=%d\n",(int)est);
+      // debug end
+      re = r - (double)(REDUCE_R[bst]);
+      ge = g - (double)(REDUCE_G[bst]);
+      be = b - (double)(REDUCE_B[bst]);
+      // (errorR[adr+1]) += re*7;
+      // (errorG[adr+1]) += ge*7;
+      // (errorB[adr+1]) += be*7;
+
+      // (errorR[adr+mx-1]) += re*3;
+      // (errorG[adr+mx-1]) += ge*3;
+      // (errorB[adr+mx-1]) += be*3;
+
+      // (errorR[adr+mx]) += re*5;
+      // (errorG[adr+mx]) += ge*5;
+      // (errorB[adr+mx]) += be*5;
+
+      // (errorR[adr+mx+1]) += re;
+      // (errorG[adr+mx+1]) += ge;
+      // (errorB[adr+mx+1]) += be;
+      if (dither == 0) {
+        (errorR[adr + 1]) += re * 7.0;
+        (errorG[adr + 1]) += ge * 7.0;
+        (errorB[adr + 1]) += be * 7.0;
+
+        (errorR[adr + mx - 1]) += re * 3.0;
+        (errorG[adr + mx - 1]) += ge * 3.0;
+        (errorB[adr + mx - 1]) += be * 3.0;
+
+        (errorR[adr + mx]) += re * 5.0;
+        (errorG[adr + mx]) += ge * 5.0;
+        (errorB[adr + mx]) += be * 5.0;
+
+        (errorR[adr + mx + 1]) += re;
+        (errorG[adr + mx + 1]) += ge;
+        (errorB[adr + mx + 1]) += be;
+        // (errorR[adr+mx]) += re*1;
+        // (errorG[adr+mx]) += ge*1;
+        // (errorB[adr+mx]) += be*1;
+      } else if (dither == 1) {
+        (errorR[adr + 1]) += re * 2.0;
+        (errorG[adr + 1]) += ge * 2.0;
+        (errorB[adr + 1]) += be * 2.0;
+
+        (errorR[adr + mx - 1]) += re;
+        (errorG[adr + mx - 1]) += ge;
+        (errorB[adr + mx - 1]) += be;
+
+        (errorR[adr + mx]) += re;
+        (errorG[adr + mx]) += ge;
+        (errorB[adr + mx]) += be;
+
+        // (errorR[adr+mx+1]) += re;
+        // (errorG[adr+mx+1]) += ge;
+        // (errorB[adr+mx+1]) += be;
+
+      } else if (dither == 2) {
+        (errorR[adr + 1]) += re * 8.0;
+        (errorG[adr + 1]) += ge * 8.0;
+        (errorB[adr + 1]) += be * 8.0;
+        (errorR[adr + 2]) += re * 4.0;
+        (errorG[adr + 2]) += ge * 4.0;
+        (errorB[adr + 2]) += be * 4.0;
+        (errorR[adr + mx - 2]) += re * 2.0;
+        (errorG[adr + mx - 2]) += ge * 2.0;
+        (errorB[adr + mx - 2]) += be * 2.0;
+        (errorR[adr + mx - 1]) += re * 4.0;
+        (errorG[adr + mx - 1]) += ge * 4.0;
+        (errorB[adr + mx - 1]) += be * 4.0;
+        (errorR[adr + mx]) += re * 8.0;
+        (errorG[adr + mx]) += ge * 8.0;
+        (errorB[adr + mx]) += be * 8.0;
+        (errorR[adr + mx + 1]) += re * 4.0;
+        (errorG[adr + mx + 1]) += ge * 4.0;
+        (errorB[adr + mx + 1]) += be * 4.0;
+        (errorR[adr + mx + 2]) += re * 2.0;
+        (errorG[adr + mx + 2]) += ge * 2.0;
+        (errorB[adr + mx + 2]) += be * 2.0;
+
+        (errorR[adr + mx * 2 - 2]) += re;
+        (errorG[adr + mx * 2 - 2]) += ge;
+        (errorB[adr + mx * 2 - 2]) += be;
+        (errorR[adr + mx * 2 - 1]) += re * 2.0;
+        (errorG[adr + mx * 2 - 1]) += ge * 2.0;
+        (errorB[adr + mx * 2 - 1]) += be * 2.0;
+        (errorR[adr + mx * 2]) += re * 4.0;
+        (errorG[adr + mx * 2]) += ge * 4.0;
+        (errorB[adr + mx * 2]) += be * 4.0;
+        (errorR[adr + mx * 2 + 1]) += re * 2.0;
+        (errorG[adr + mx * 2 + 1]) += ge * 2.0;
+        (errorB[adr + mx * 2 + 1]) += be * 2.0;
+        (errorR[adr + mx * 2 + 2]) += re;
+        (errorG[adr + mx * 2 + 2]) += ge;
+        (errorB[adr + mx * 2 + 2]) += be;
+      } else if (dither == 3) {
+        (errorR[adr + 1]) += re * 7.0;
+        (errorG[adr + 1]) += ge * 7.0;
+        (errorB[adr + 1]) += be * 7.0;
+        (errorR[adr + 2]) += re * 5.0;
+        (errorG[adr + 2]) += ge * 5.0;
+        (errorB[adr + 2]) += be * 5.0;
+        (errorR[adr + mx - 2]) += re * 3.0;
+        (errorG[adr + mx - 2]) += ge * 3.0;
+        (errorB[adr + mx - 2]) += be * 3.0;
+        (errorR[adr + mx - 1]) += re * 4.0;
+        (errorG[adr + mx - 1]) += ge * 4.0;
+        (errorB[adr + mx - 1]) += be * 4.0;
+        (errorR[adr + mx]) += re * 7.0;
+        (errorG[adr + mx]) += ge * 7.0;
+        (errorB[adr + mx]) += be * 7.0;
+        (errorR[adr + mx + 1]) += re * 5.0;
+        (errorG[adr + mx + 1]) += ge * 5.0;
+        (errorB[adr + mx + 1]) += be * 5.0;
+        (errorR[adr + mx + 2]) += re * 3.0;
+        (errorG[adr + mx + 2]) += ge * 3.0;
+        (errorB[adr + mx + 2]) += be * 3.0;
+
+        (errorR[adr + mx * 2 - 2]) += re;
+        (errorG[adr + mx * 2 - 2]) += ge;
+        (errorB[adr + mx * 2 - 2]) += be;
+        (errorR[adr + mx * 2 - 1]) += re * 3.0;
+        (errorG[adr + mx * 2 - 1]) += ge * 3.0;
+        (errorB[adr + mx * 2 - 1]) += be * 3.0;
+        (errorR[adr + mx * 2]) += re * 5.0;
+        (errorG[adr + mx * 2]) += ge * 5.0;
+        (errorB[adr + mx * 2]) += be * 5.0;
+        (errorR[adr + mx * 2 + 1]) += re * 3.0;
+        (errorG[adr + mx * 2 + 1]) += ge * 3.0;
+        (errorB[adr + mx * 2 + 1]) += be * 3.0;
+        (errorR[adr + mx * 2 + 2]) += re;
+        (errorG[adr + mx * 2 + 2]) += ge;
+        (errorB[adr + mx * 2 + 2]) += be;
+      }
+
+      (IIRIN[x + y * hsize]) = (REDUCE_R[bst]);
+      (IIGIN[x + y * hsize]) = (REDUCE_G[bst]);
+      (IIBIN[x + y * hsize]) = (REDUCE_B[bst]);
+      // (IIRIN[x*vsize+y]) = (int)(REDUCE_R[OUT[x*vsize+y]]);
+      // (IIGIN[x*vsize+y]) = (int)(REDUCE_G[OUT[x*vsize+y]]);
+      // (IIBIN[x*vsize+y]) = (int)(REDUCE_B[OUT[x*vsize+y]]);
+    }
+    if (dither == 0 || dither == 1) {
+      for (int j = 0; j < mx; j++) {
+        errorR[j] = errorR[j + mx];
+        errorG[j] = errorG[j + mx];
+        errorB[j] = errorB[j + mx];
+        errorR[j + mx] = 0.0;
+        errorG[j + mx] = 0.0;
+        errorB[j + mx] = 0.0;
+      }
+    } else if (dither == 2 || dither == 3) {
+      for (int j = 0; j < mx; j++) {
+        errorR[j] = errorR[j + mx];
+        errorG[j] = errorG[j + mx];
+        errorB[j] = errorB[j + mx];
+        errorR[j + mx] = errorR[j + 2 * mx];
+        errorG[j + mx] = errorG[j + 2 * mx];
+        errorB[j + mx] = errorB[j + 2 * mx];
+        errorR[j + 2 * mx] = 0.0;
+        errorG[j + 2 * mx] = 0.0;
+        errorB[j + 2 * mx] = 0.0;
+      }
+    }
+  }
+
+  // OUT[i]
+  // IIRINに画像データがはいっている
+
+  for (int i = 0; i < IMAGE_SIZE; i++) {
+    for (int j = 0; j < PALET_SIZE; j++) {
+      if ((IIRIN[i] == (REDUCE_R[j])) && (IIGIN[i] == (REDUCE_G[j])) &&
+          (IIBIN[i] == (REDUCE_B[j]))) {
+        OUT[i] = j;
+      }
+    }
+  }
+}
+
+// パレット番号に変換し OUT に出力する (edon == 2)
+void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
+                const double *YIN, const double *UIN, int PALET_SIZE,
+                const double *V_JYUSHIN1, const double *Y_JYUSHIN1,
+                const double *U_JYUSHIN1, uint8_t *OUT) {
+  int IMAGE_SIZE = hsize * vsize;
+  std::vector<double> IIRIN(IMAGE_SIZE);
+  std::vector<double> IIGIN(IMAGE_SIZE);
+  std::vector<double> IIBIN(IMAGE_SIZE);
+  for (int i = 0; i < IMAGE_SIZE; i++) {
+    IIRIN[i] = (VIN[i]);
+    IIGIN[i] = (YIN[i]);
+    IIBIN[i] = (UIN[i]);
+  }
+  int mx = 0;
+  if (dither == 0 || dither == 1) {
+    mx = hsize + 2;
+  } else if (dither == 2 || dither == 3) {
+    mx = hsize + 4;
+  }
+  int ERROR_SIZE = 0;
+  if (dither == 0 || dither == 1) {
+    ERROR_SIZE = mx * 2;
+  } else if (dither == 2 || dither == 3) {
+    ERROR_SIZE = mx * 3;
+  }
+  std::vector<double> errorR(ERROR_SIZE);
+  std::vector<double> errorG(ERROR_SIZE);
+  std::vector<double> errorB(ERROR_SIZE);
+  double r = 0.0;
+  double g = 0.0;
+  double b = 0.0;
+  double re = 0.0;
+  double ge = 0.0;
+  double be = 0.0;
+  int adr = 0;
+  for (int y = 0; y < vsize; y++) {
+    for (int x = 0; x < hsize; x++) {
+      if (dither == 0 || dither == 1) {
+        adr = x + 1;
+      } else if (dither == 2 || dither == 3) {
+        adr = x + 2;
+      }
+      // r= (IIRIN[x*vsize+y])+((errorR[adr])/16);
+      // g= (IIGIN[x*vsize+y])+((errorG[adr])/16);
+      // b= (IIBIN[x*vsize+y])+((errorB[adr])/16);
+      if (dither == 0) {
+        r = (double)(VIN[x + y * hsize]) +
+            ((errorR[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+        g = (double)(YIN[x + y * hsize]) +
+            ((errorG[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+        b = (double)(UIN[x + y * hsize]) +
+            ((errorB[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
+      } else if (dither == 1) {
+        r = (double)(VIN[x + y * hsize]) +
+            ((errorR[adr]) / (4.0 / (per + 0.0000001)));
+        g = (double)(YIN[x + y * hsize]) +
+            ((errorG[adr]) / (4.0 / (per + 0.0000001)));
+        b = (double)(UIN[x + y * hsize]) +
+            ((errorB[adr]) / (4.0 / (per + 0.0000001)));
+      } else if (dither == 2) {
+        r = (double)(VIN[x + y * hsize]) +
+            ((errorR[adr]) / (42.0 / (per + 0.0000001)));
+        g = (double)(YIN[x + y * hsize]) +
+            ((errorG[adr]) / (42.0 / (per + 0.0000001)));
+        b = (double)(UIN[x + y * hsize]) +
+            ((errorB[adr]) / (42.0 / (per + 0.0000001)));
+      } else if (dither == 3) {
+        r = (double)(VIN[x + y * hsize]) +
+            ((errorR[adr]) / (48.0 / (per + 0.0000001)));
+        g = (double)(YIN[x + y * hsize]) +
+            ((errorG[adr]) / (48.0 / (per + 0.0000001)));
+        b = (double)(UIN[x + y * hsize]) +
+            ((errorB[adr]) / (48.0 / (per + 0.0000001)));
+      }
+      /* if(r > 255.0){
+      r=255.0;
+      }
+      if(r < 0.0){
+      r=0.0;
+      }
+      if(g > 255.0){
+      g=255.0;
+      }
+      if(g < 0.0){
+      g=0.0;
+      }
+      if(b > 255.0){
+      b=255.0;
+      }
+      if(b < 0.0){
+      b=0.0;
+      }*/
+      // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
+      // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
+      // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
+      int bst = FindMinimumDistanceIndex(PALET_SIZE, r, g, b, &V_JYUSHIN1[0],
+                                         &Y_JYUSHIN1[0], &U_JYUSHIN1[0]);
+      // debug start
+      // printf("gosa=%d\n",(int)est);
+      // debug end
+      re = r - (double)(V_JYUSHIN1[bst]);
+      ge = g - (double)(Y_JYUSHIN1[bst]);
+      be = b - (double)(U_JYUSHIN1[bst]);
+      // (errorR[adr+1]) += re*7;
+      // (errorG[adr+1]) += ge*7;
+      // (errorB[adr+1]) += be*7;
+
+      // (errorR[adr+mx-1]) += re*3;
+      // (errorG[adr+mx-1]) += ge*3;
+      // (errorB[adr+mx-1]) += be*3;
+
+      // (errorR[adr+mx]) += re*5;
+      // (errorG[adr+mx]) += ge*5;
+      // (errorB[adr+mx]) += be*5;
+
+      // (errorR[adr+mx+1]) += re;
+      // (errorG[adr+mx+1]) += ge;
+      // (errorB[adr+mx+1]) += be;
+      if (dither == 0) {
+        (errorR[adr + 1]) += re * 7.0;
+        (errorG[adr + 1]) += ge * 7.0;
+        (errorB[adr + 1]) += be * 7.0;
+
+        (errorR[adr + mx - 1]) += re * 3.0;
+        (errorG[adr + mx - 1]) += ge * 3.0;
+        (errorB[adr + mx - 1]) += be * 3.0;
+
+        (errorR[adr + mx]) += re * 5.0;
+        (errorG[adr + mx]) += ge * 5.0;
+        (errorB[adr + mx]) += be * 5.0;
+
+        (errorR[adr + mx + 1]) += re;
+        (errorG[adr + mx + 1]) += ge;
+        (errorB[adr + mx + 1]) += be;
+        // (errorR[adr+mx]) += re*1;
+        // (errorG[adr+mx]) += ge*1;
+        // (errorB[adr+mx]) += be*1;
+      } else if (dither == 1) {
+        (errorR[adr + 1]) += re * 2.0;
+        (errorG[adr + 1]) += ge * 2.0;
+        (errorB[adr + 1]) += be * 2.0;
+
+        (errorR[adr + mx - 1]) += re;
+        (errorG[adr + mx - 1]) += ge;
+        (errorB[adr + mx - 1]) += be;
+
+        (errorR[adr + mx]) += re;
+        (errorG[adr + mx]) += ge;
+        (errorB[adr + mx]) += be;
+
+        // (errorR[adr+mx+1]) += re;
+        // (errorG[adr+mx+1]) += ge;
+        // (errorB[adr+mx+1]) += be;
+
+      } else if (dither == 2) {
+        (errorR[adr + 1]) += re * 8.0;
+        (errorG[adr + 1]) += ge * 8.0;
+        (errorB[adr + 1]) += be * 8.0;
+        (errorR[adr + 2]) += re * 4.0;
+        (errorG[adr + 2]) += ge * 4.0;
+        (errorB[adr + 2]) += be * 4.0;
+        (errorR[adr + mx - 2]) += re * 2.0;
+        (errorG[adr + mx - 2]) += ge * 2.0;
+        (errorB[adr + mx - 2]) += be * 2.0;
+        (errorR[adr + mx - 1]) += re * 4.0;
+        (errorG[adr + mx - 1]) += ge * 4.0;
+        (errorB[adr + mx - 1]) += be * 4.0;
+        (errorR[adr + mx]) += re * 8.0;
+        (errorG[adr + mx]) += ge * 8.0;
+        (errorB[adr + mx]) += be * 8.0;
+        (errorR[adr + mx + 1]) += re * 4.0;
+        (errorG[adr + mx + 1]) += ge * 4.0;
+        (errorB[adr + mx + 1]) += be * 4.0;
+        (errorR[adr + mx + 2]) += re * 2.0;
+        (errorG[adr + mx + 2]) += ge * 2.0;
+        (errorB[adr + mx + 2]) += be * 2.0;
+
+        (errorR[adr + mx * 2 - 2]) += re;
+        (errorG[adr + mx * 2 - 2]) += ge;
+        (errorB[adr + mx * 2 - 2]) += be;
+        (errorR[adr + mx * 2 - 1]) += re * 2.0;
+        (errorG[adr + mx * 2 - 1]) += ge * 2.0;
+        (errorB[adr + mx * 2 - 1]) += be * 2.0;
+        (errorR[adr + mx * 2]) += re * 4.0;
+        (errorG[adr + mx * 2]) += ge * 4.0;
+        (errorB[adr + mx * 2]) += be * 4.0;
+        (errorR[adr + mx * 2 + 1]) += re * 2.0;
+        (errorG[adr + mx * 2 + 1]) += ge * 2.0;
+        (errorB[adr + mx * 2 + 1]) += be * 2.0;
+        (errorR[adr + mx * 2 + 2]) += re;
+        (errorG[adr + mx * 2 + 2]) += ge;
+        (errorB[adr + mx * 2 + 2]) += be;
+      } else if (dither == 3) {
+        (errorR[adr + 1]) += re * 7.0;
+        (errorG[adr + 1]) += ge * 7.0;
+        (errorB[adr + 1]) += be * 7.0;
+        (errorR[adr + 2]) += re * 5.0;
+        (errorG[adr + 2]) += ge * 5.0;
+        (errorB[adr + 2]) += be * 5.0;
+        (errorR[adr + mx - 2]) += re * 3.0;
+        (errorG[adr + mx - 2]) += ge * 3.0;
+        (errorB[adr + mx - 2]) += be * 3.0;
+        (errorR[adr + mx - 1]) += re * 4.0;
+        (errorG[adr + mx - 1]) += ge * 4.0;
+        (errorB[adr + mx - 1]) += be * 4.0;
+        (errorR[adr + mx]) += re * 7.0;
+        (errorG[adr + mx]) += ge * 7.0;
+        (errorB[adr + mx]) += be * 7.0;
+        (errorR[adr + mx + 1]) += re * 5.0;
+        (errorG[adr + mx + 1]) += ge * 5.0;
+        (errorB[adr + mx + 1]) += be * 5.0;
+        (errorR[adr + mx + 2]) += re * 3.0;
+        (errorG[adr + mx + 2]) += ge * 3.0;
+        (errorB[adr + mx + 2]) += be * 3.0;
+
+        (errorR[adr + mx * 2 - 2]) += re;
+        (errorG[adr + mx * 2 - 2]) += ge;
+        (errorB[adr + mx * 2 - 2]) += be;
+        (errorR[adr + mx * 2 - 1]) += re * 3.0;
+        (errorG[adr + mx * 2 - 1]) += ge * 3.0;
+        (errorB[adr + mx * 2 - 1]) += be * 3.0;
+        (errorR[adr + mx * 2]) += re * 5.0;
+        (errorG[adr + mx * 2]) += ge * 5.0;
+        (errorB[adr + mx * 2]) += be * 5.0;
+        (errorR[adr + mx * 2 + 1]) += re * 3.0;
+        (errorG[adr + mx * 2 + 1]) += ge * 3.0;
+        (errorB[adr + mx * 2 + 1]) += be * 3.0;
+        (errorR[adr + mx * 2 + 2]) += re;
+        (errorG[adr + mx * 2 + 2]) += ge;
+        (errorB[adr + mx * 2 + 2]) += be;
+      }
+
+      (IIRIN[x + y * hsize]) = (V_JYUSHIN1[bst]);
+      (IIGIN[x + y * hsize]) = (Y_JYUSHIN1[bst]);
+      (IIBIN[x + y * hsize]) = (U_JYUSHIN1[bst]);
+      // (IIRIN[x*vsize+y]) = (int)(REDUCE_R[OUT[x*vsize+y]]);
+      // (IIGIN[x*vsize+y]) = (int)(REDUCE_G[OUT[x*vsize+y]]);
+      // (IIBIN[x*vsize+y]) = (int)(REDUCE_B[OUT[x*vsize+y]]);
+    }
+    if (dither == 0 || dither == 1) {
+      for (int j = 0; j < mx; j++) {
+        errorR[j] = errorR[j + mx];
+        errorG[j] = errorG[j + mx];
+        errorB[j] = errorB[j + mx];
+        errorR[j + mx] = 0.0;
+        errorG[j + mx] = 0.0;
+        errorB[j + mx] = 0.0;
+      }
+    } else if (dither == 2 || dither == 3) {
+      for (int j = 0; j < mx; j++) {
+        errorR[j] = errorR[j + mx];
+        errorG[j] = errorG[j + mx];
+        errorB[j] = errorB[j + mx];
+        errorR[j + mx] = errorR[j + 2 * mx];
+        errorG[j + mx] = errorG[j + 2 * mx];
+        errorB[j + mx] = errorB[j + 2 * mx];
+        errorR[j + 2 * mx] = 0.0;
+        errorG[j + 2 * mx] = 0.0;
+        errorB[j + 2 * mx] = 0.0;
+      }
+    }
+  }
+
+  // OUT[i]
+  // IIRINに画像データがはいっている
+
+  for (int i = 0; i < IMAGE_SIZE; i++) {
+    for (int j = 0; j < PALET_SIZE; j++) { // hotspot
+      if (((int)IIRIN[i] == (int)V_JYUSHIN1[j]) &&
+          ((int)IIGIN[i] == (int)Y_JYUSHIN1[j]) &&
+          ((int)IIBIN[i] == (int)U_JYUSHIN1[j])) {
+        OUT[i] = j;
+        break;
+      }
+    }
+  }
+}
