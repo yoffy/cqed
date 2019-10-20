@@ -80,13 +80,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   double PI = atan(1.0) * 4.0;
   int IMAGE_SIZE = hsize * vsize;
   // RGBをYUVに変換
-  double *YIN = (double *)malloc(sizeof(double) * IMAGE_SIZE);
-  double *UIN = (double *)malloc(sizeof(double) * IMAGE_SIZE);
-  double *VIN = (double *)malloc(sizeof(double) * IMAGE_SIZE);
-  double *RrIN = (double *)malloc(sizeof(double) * IMAGE_SIZE);
-  double *GgIN = (double *)malloc(sizeof(double) * IMAGE_SIZE);
-  double *BbIN = (double *)malloc(sizeof(double) * IMAGE_SIZE);
-  double *RRR33 = (double *)malloc(sizeof(double) * IMAGE_SIZE);
+  std::vector<double> YIN(IMAGE_SIZE);
+  std::vector<double> UIN(IMAGE_SIZE);
+  std::vector<double> VIN(IMAGE_SIZE);
+  std::vector<double> RrIN(IMAGE_SIZE);
+  std::vector<double> GgIN(IMAGE_SIZE);
+  std::vector<double> BbIN(IMAGE_SIZE);
+  std::vector<double> RRR33(IMAGE_SIZE);
 
   if (lpf == 1) {
     //    while(1);
@@ -168,46 +168,17 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   IRO_THIETA *= PI / 180;
   if (cs == 0) {
     for (int i = 0; i < IMAGE_SIZE; i++) {
-      YIN[i] = *(
-          GgIN +
-          i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
-              ///*+ 0.5*/);
-      UIN[i] = *(
-          BbIN +
-          i); //((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
-              //+ 128.0);
-      VIN[i] = *(
-          RrIN +
-          i); //(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
-              //+ 128.0);
+      YIN[i] = GgIN[i];
+      UIN[i] = BbIN[i];
+      VIN[i] = RrIN[i];
     }
   } else if (cs == 1) {
     for (int i = 0; i < IMAGE_SIZE; i++) {
-      RGBtoLAB(
-          RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i,
-          UIN +
-              i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
-                  //+ 0.5);
-      // UIN[i] =
-      // BIN[i];//((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
-      //+ 128.5);
-      // VIN[i] =
-      // RIN[i];//(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
-      //+ 128.5);
+      RGBtoLAB(RrIN[i], GgIN[i], BbIN[i], &VIN[i], &YIN[i], &UIN[i]);
     }
   } else if (cs == 2) {
     for (int i = 0; i < IMAGE_SIZE; i++) {
-      RGBtoLuv(
-          RrIN[i], GgIN[i], BbIN[i], VIN + i, YIN + i,
-          UIN +
-              i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
-                  //+ 0.5);
-      // UIN[i] =
-      // BIN[i];//((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
-      //+ 128.5);
-      // VIN[i] =
-      // RIN[i];//(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
-      //+ 128.5);
+      RGBtoLuv(RrIN[i], GgIN[i], BbIN[i], &VIN[i], &YIN[i], &UIN[i]);
     }
   } else if (cs == 3 || cs == 9) {
     for (int i = 0; i < IMAGE_SIZE; i++) {
@@ -284,18 +255,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                  255.0 / (1.0 + exp(-aaaa * (-127.5)))) *
                 255.0 / (255.0 - 2.0 * 255.0 / (1.0 + exp(-aaaa * (-127.5))));
 
-      YIN[i] = *(
-          GgIN +
-          i); //(0.29891*(float)(RIN[i])+0.58661*(float)(GIN[i])+0.11448*(float)(BIN[i])
-              ///*+ 0.5*/);
-      UIN[i] = *(
-          BbIN +
-          i); //((-0.16874*(float)(RIN[i])-0.33126*(float)(GIN[i])+0.50000*(float)(BIN[i]))
-              //+ 128.0);
-      VIN[i] = *(
-          RrIN +
-          i); //(0.50000*(float)(RIN[i])-0.41869*(float)(GIN[i])-0.08131*(float)(BIN[i])
-              //+ 128.0);
+      YIN[i] = GgIN[i];
+      UIN[i] = BbIN[i];
+      VIN[i] = RrIN[i];
     }
   } else if (cs == 7) {
     for (int i = 0; i < IMAGE_SIZE; i++) {
@@ -973,7 +935,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   // 1側のmaxdistanceを求める
   auto U_RGB2 = SumEquals(IMAGE_SIZE, &INDEXED_COLOR[0], PT[MEN][1].INDEXNO,
-                          YIN, UIN, VIN);
+                          &YIN[0], &UIN[0], &VIN[0]);
 
   if (PT[MEN][1].INDEXNUM != 0) {
     std::get<0>(U_RGB2) /= (double)PT[MEN][1].INDEXNUM;
@@ -1191,8 +1153,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     }
   }
 
-  auto U_RGB3 =
-      SumEquals(IMAGE_SIZE, &INDEXED_COLOR[0], PALET_NO, YIN, UIN, VIN);
+  auto U_RGB3 = SumEquals(IMAGE_SIZE, &INDEXED_COLOR[0], PALET_NO, &YIN[0],
+                          &UIN[0], &VIN[0]);
   std::get<0>(U_RGB3) /= (double)PT[MEN][PALET_NO].INDEXNUM;
   std::get<1>(U_RGB3) /= (double)PT[MEN][PALET_NO].INDEXNUM;
   std::get<2>(U_RGB3) /= (double)PT[MEN][PALET_NO].INDEXNUM;
