@@ -18,7 +18,7 @@
 #define BMULT 1.0 // 1.0*1.0
 #define EDGETH 30 // 25
 
-struct palet //パレット構造体
+struct palette //パレット構造体
 {
   int U_R;
   int U_G;
@@ -33,11 +33,11 @@ struct palet //パレット構造体
 };
 
 // パレット
-struct palet PT[2][IROSUU];
+static palette PT[2][IROSUU];
 
 // U から T に変換して複製
 template <typename T, typename U>
-std::vector<T> DuplicateCast(size_t SIZE, const U *IN) {
+static std::vector<T> DuplicateCast(size_t SIZE, const U *IN) {
   std::vector<T> OUT(SIZE);
   for (size_t i = 0; i < SIZE; i++) {
     OUT[i] = static_cast<T>(IN[i]);
@@ -58,16 +58,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
                             // unsigned char *BOUT)
 {
   int DIVIDENUM;
-  // int RDIV;
-  // int GDIV;
-  // int BDIV;
-  int m, p;
+  int p;
   int MEN;
   int NMEN;
-  // unsigned char *PALETGAZOU;
-  // unsigned char REDUCE_R[IROSUU];
-  // unsigned char REDUCE_G[IROSUU];
-  // unsigned char REDUCE_B[IROSUU];
   double SUM_R[IROSUU];
   double SUM_G[IROSUU];
   double SUM_B[IROSUU];
@@ -1678,16 +1671,16 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     int NUM = 0;
 
     if ((bun == 1) || (bun == 2) || (bun == 3) || (bun == 4) || (bun == 5)) {
-      const palet *MAX_ELEMENT =
+      const palette *MAX_ELEMENT =
           std::max_element(&PT[MEN][0], &PT[MEN][DIVIDENUM],
-                           [](const palet &lhs, const palet &rhs) {
+                           [](const palette &lhs, const palette &rhs) {
                              return lhs.MAXDISTANCE < rhs.MAXDISTANCE;
                            });
       NUM = MAX_ELEMENT - &PT[MEN][0];
     } else if (bun == 0) {
-      const palet *MAX_ELEMENT =
+      const palette *MAX_ELEMENT =
           std::max_element(&PT[MEN][0], &PT[MEN][DIVIDENUM],
-                           [](const palet &lhs, const palet &rhs) {
+                           [](const palette &lhs, const palette &rhs) {
                              return lhs.MAXDISTANCE * lhs.INDEXNUM <
                                     rhs.MAXDISTANCE * rhs.INDEXNUM;
                            });
@@ -2296,9 +2289,9 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   for (int i = 0; i < IROSUU; i++) {
     y += PT[MEN][i].INDEXNUM;
   }
-  printf("palet sou gasosuu=%d\n", y);
+  printf("palette sou gasosuu=%d\n", y);
 
-  for (m = 0; m < IROSUU; m++) {
+  for (int m = 0; m < IROSUU; m++) {
     int k = PT[MEN][m].INDEXNO;
     if (PT[MEN][m].INDEXNUM != 0) {
       Y_JYUSHIN[k] /= (double)PT[MEN][m].INDEXNUM;
@@ -2310,19 +2303,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       V_JYUSHIN[k] = 255.0; // 128.0;
     }
   }
-  // debug start
-  // for(i=0;i<IROSUU;i++){
-  // fprintf(stderr,"PALET%d %d %d\n",Y_JYUSHIN[i],U_JYUSHIN[i],V_JYUSHIN[i]);
-  // }
-  // while(1);
-  // debug end
-  // for(i=0;i<IROSUU;i++){
-  // REDUCE_R[i] = (unsigned char)(R_JYUSHIN[i]);
-  // REDUCE_G[i] = (unsigned char)(G_JYUSHIN[i]);
-  // REDUCE_B[i] = (unsigned char)(B_JYUSHIN[i]);
-  // }
-  // PALETGAZOU = (unsigned char*)malloc(sizeof(unsigned char)*IMAGE_SIZE);
-  // int q;
+
   int s;
   p = 0;
   s = 0;
@@ -2350,11 +2331,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         }
       }
       // debug start
-      int KARI[IROSUU];
       if (1) {
-        for (int i = 0; i < IROSUU; i++) {
-          KARI[i] = 0;
-        }
+        int KARI[IROSUU] = {0};
         for (int i = 0; i < IMAGE_SIZE; i++) {
           KARI[PALETGAZOU[i]]++;
         }
@@ -2393,8 +2371,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           HEIKIN_G[j] = (double)((rand()) % ((int)(bmult * 256)));
           HEIKIN_B[j] = (double)((rand()) % ((int)(rmult * 256)));
           // debug start
-          printf("RAND de dasita palet = %f %f %f\n", HEIKIN_R[j], HEIKIN_G[j],
-                 HEIKIN_B[j]);
+          printf("RAND de dasita palette = %f %f %f\n", HEIKIN_R[j],
+                 HEIKIN_G[j], HEIKIN_B[j]);
           // debug end
         }
       }
