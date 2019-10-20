@@ -784,8 +784,8 @@ void modoshi(double V[3], double R, double G, double B, double *X, double *Y,
        (NZ * NZ * ONEMINCOSTHIETA + COSTHIETA) * B;
 } // fprintf(stderr,"X1=%f,Y1=%f,Z1=%fTHIETA=%fFAI=%f,%f\n",X1,Y1,Z1,THIETA/3.14,FAI/3.14,sqrt(V[0]*V[0]+V[1]*V[1])/V[2]);
 
-void kaiten(double V[3], double X, double Y, double Z, double *R, double *G,
-            double *B) {
+static void kaiten_one(double V[3], double X, double Y, double Z, double *R,
+                       double *G, double *B) {
   double SINTHIETA, COSTHIETA;
   double NX, NY, NZ;
   double R1, G1, B1;
@@ -814,6 +814,23 @@ void kaiten(double V[3], double X, double Y, double Z, double *R, double *G,
   *R = R1;
   *G = G1;
   *B = B1;
+}
+
+void kaiten(int IMAGE_SIZE, double V[3], const double *X, const double *Y,
+            const double *Z, double *R, double *G, double *B) {
+  for (int i = 0; i < IMAGE_SIZE; i++) {
+    kaiten_one(V, X[i], Y[i], Z[i], &R[i], &G[i], &B[i]);
+  }
+}
+
+void kaitenEquals(int IMAGE_SIZE, double V[3], const double *X, const double *Y,
+                  const double *Z, const int16_t *INDEXED_COLOR,
+                  int16_t PALET_NO, double *R, double *G, double *B) {
+  for (int i = 0; i < IMAGE_SIZE; i++) {
+    if (INDEXED_COLOR[i] == PALET_NO) {
+      kaiten_one(V, X[i], Y[i], Z[i], &R[i], &G[i], &B[i]);
+    }
+  }
 }
 
 // TODO: 愚直な引き算に直す

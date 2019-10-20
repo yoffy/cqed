@@ -670,9 +670,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   V[1] = X1[1][Y];
   V[2] = X1[2][Y];
   int *iRRRR = (int *)malloc(sizeof(int) * (IMAGE_SIZE));
-  for (int i = 0; i < IMAGE_SIZE; i++) {
-    kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-  }
+  kaiten(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &RRR[0], &GGG[0], &BBB[0]);
   for (int i = 0, l = 0; i < IMAGE_SIZE; i++) {
     if (INDEXED_COLOR[i] != kEdgePixel) {
       iRRRR[l] = (int)(RRR[i] + 0.5);
@@ -881,9 +879,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         V[0] = X1[0][Y];
         V[1] = X1[1][Y];
         V[2] = X1[2][Y];
-        for (int i = 0; i < IMAGE_SIZE; i++) {
-          kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-        }
+        kaiten(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &RRR[0], &GGG[0],
+               &BBB[0]);
         // for(i=0,l=0;i<IMAGE_SIZE;i++){
         // if(index3[i]!=-1){
         // iRRRR[l] = (int)(RRR[i]+0.5);
@@ -1073,9 +1070,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         V[0] = X1[0][Y];
         V[1] = X1[1][Y];
         V[2] = X1[2][Y];
-        for (int i = 0; i < IMAGE_SIZE; i++) {
-          kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-        }
+        kaiten(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &RRR[0], &GGG[0],
+               &BBB[0]);
         // for(i=0,l=0;i<IMAGE_SIZE;i++){
         // if(index3[i]!=-1){
         // iRRRR[l] = (int)(RRR[i]+0.5);
@@ -1203,11 +1199,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   V[0] = X1[0][Y];
   V[1] = X1[1][Y];
   V[2] = X1[2][Y];
-  for (int i = 0; i < IMAGE_SIZE; i++) {
-    if (INDEXED_COLOR[i] == PALET_NO) {
-      kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-    }
-  }
+  kaitenEquals(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &INDEXED_COLOR[0],
+               PALET_NO, &RRR[0], &GGG[0], &BBB[0]);
   GASOSUU = PT[MEN][PALET_NO].INDEXNUM;
   for (int i = 0; i < IMAGE_SIZE; i++) {
     RRR33[i] = RRR[i];
@@ -1407,9 +1400,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         V[0] = X1[0][Y];
         V[1] = X1[1][Y];
         V[2] = X1[2][Y];
-        for (int i = 0; i < IMAGE_SIZE; i++) {
-          kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-        }
+        kaiten(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &RRR[0], &GGG[0],
+               &BBB[0]);
         // for(i=0,l=0;i<IMAGE_SIZE;i++){
         // if(index3[i]!=-1){
         // iRRRR[l] = (int)(RRR[i]+0.5);
@@ -1597,9 +1589,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
         V[0] = X1[0][Y];
         V[1] = X1[1][Y];
         V[2] = X1[2][Y];
-        for (int i = 0; i < IMAGE_SIZE; i++) {
-          kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-        }
+        kaiten(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &RRR[0], &GGG[0],
+               &BBB[0]);
         // for(i=0,l=0;i<IMAGE_SIZE;i++){
         // if(index3[i]!=-1){
         // iRRRR[l] = (int)(RRR[i]+0.5);
@@ -1779,11 +1770,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
     V[0] = X1[0][Y];
     V[1] = X1[1][Y];
     V[2] = X1[2][Y];
-    for (int i = 0; i < IMAGE_SIZE; i++) {
-      if (INDEXED_COLOR[i] == PT[MEN][NUM].INDEXNO) {
-        kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-      }
-    }
+    kaitenEquals(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &INDEXED_COLOR[0],
+                 PT[MEN][NUM].INDEXNO, &RRR[0], &GGG[0], &BBB[0]);
     GASOSUU = PT[MEN][NUM].INDEXNUM;
     for (int i = 0; i < IMAGE_SIZE; i++) {
       RRR33[i] = RRR[i];
@@ -1999,9 +1987,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           V[0] = X1[0][Y];
           V[1] = X1[1][Y];
           V[2] = X1[2][Y];
-          for (int i = 0; i < IMAGE_SIZE; i++) {
-            kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-          }
+          kaiten(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &RRR[0], &GGG[0],
+                 &BBB[0]);
           // for(i=0,l=0;i<IMAGE_SIZE;i++){
           // if(index3[i]!=-1){
           // iRRRR[l] = (int)(RRR[i]+0.5);
@@ -2190,9 +2177,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           V[0] = X1[0][Y];
           V[1] = X1[1][Y];
           V[2] = X1[2][Y];
-          for (int i = 0; i < IMAGE_SIZE; i++) {
-            kaiten(V, RR[i], GG[i], BB[i], RRR + i, GGG + i, BBB + i);
-          }
+          kaiten(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &RRR[0], &GGG[0],
+                 &BBB[0]);
           // for(i=0,l=0;i<IMAGE_SIZE;i++){
           // if(index3[i]!=-1){
           // iRRRR[l] = (int)(RRR[i]+0.5);

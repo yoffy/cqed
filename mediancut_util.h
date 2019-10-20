@@ -35,8 +35,11 @@ int ohtsu2(int NUM, const double *X, const double *Y, const double *Z, int omh);
 int media(int NUM, const int *X);
 void modoshi(double V[3], double R, double G, double B, double *X, double *Y,
              double *Z);
-void kaiten(double V[3], double X, double Y, double Z, double *R, double *G,
-            double *B);
+void kaiten(int IMAGE_SIZE, double V[3], const double *X, const double *Y,
+            const double *Z, double *R, double *G, double *B);
+void kaitenEquals(int IMAGE_SIZE, double V[3], const double *X, const double *Y,
+                  const double *Z, const int16_t *INDEXED_COLOR,
+                  int16_t PALET_NO, double *R, double *G, double *B);
 void SobelFilterHorizontal(int hsize, int vsize, const int *IN, int *OUT);
 void SobelFilterVertical(int hsize, int vsize, const int *IN, int *OUT);
 void PrewitAbsoluteFilterVertical(int hsize, int vsize, int et, const int *IN,
