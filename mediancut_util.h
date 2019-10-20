@@ -15,6 +15,11 @@ enum PixelType {
   // 0-255 は !edge
 };
 
+template <typename T> struct JYUSHIN_INDEX {
+  T Y, U, V;
+  int32_t INDEX;
+};
+
 void JacobiSetupNotEquals(int SIZE, const int16_t *PIXTYPES, int16_t PIXTYPE,
                           const double *YIN, const double *UIN,
                           const double *VIN,
@@ -74,20 +79,14 @@ std::tuple<double, double, double> SumEquals(int SIZE, const int16_t *PIXTYPES,
 std::tuple<double, double, double>
 SumNotEquals(int SIZE, const int16_t *PIXTYPES, int16_t PIXTYPE,
              const double *v1, const double *v2, const double *v3);
-int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
-                             const uint8_t *a1, const uint8_t *a2,
-                             const uint8_t *a3);
-int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
-                             const double *a1, const double *a2,
-                             const double *a3);
 void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
-               const double *VIN, int PALET_SIZE, const double *Y_JYUSHIN,
+               const double *VIN, int PALETTE_SIZE, const double *Y_JYUSHIN,
                const double *U_JYUSHIN, const double *V_JYUSHIN, uint8_t *OUT);
 void Dithering1(int hsize, int vsize, int dither, double per,
                 const uint8_t *RIN, const uint8_t *GIN, const uint8_t *BIN,
-                int PALET_SIZE, const uint8_t *REDUCE_R,
+                int PALETTE_SIZE, const uint8_t *REDUCE_R,
                 const uint8_t *REDUCE_G, const uint8_t *REDUCE_B, uint8_t *OUT);
+// パレット番号に変換し OUT に出力する (edon == 2)
 void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
-                const double *YIN, const double *UIN, int PALET_SIZE,
-                const double *V_JYUSHIN1, const double *Y_JYUSHIN1,
-                const double *U_JYUSHIN1, uint8_t *OUT);
+                const double *YIN, const double *UIN, int PALETTE_SIZE,
+                const JYUSHIN_INDEX<double> *JYUSHIN_VYU, uint8_t *OUT);

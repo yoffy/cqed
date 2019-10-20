@@ -1132,9 +1132,9 @@ SumNotEquals(int SIZE, const int16_t *PIXTYPES, int16_t PIXTYPE,
 }
 
 // (v - a)**2 の和が最小になるインデックスを探す
-int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
-                             const uint8_t *a1, const uint8_t *a2,
-                             const uint8_t *a3) {
+static int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
+                                    const uint8_t *a1, const uint8_t *a2,
+                                    const uint8_t *a3) {
   int MIN_INDEX = 0;
   double MIN_VALUE = DBL_MAX;
   for (int i = 0; i < SIZE; i++) {
@@ -1146,33 +1146,34 @@ int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
   }
   return MIN_INDEX;
 }
-// (v - a)**2 の和が最小になるインデックスを探す
-int FindMinimumDistanceIndex(int SIZE, double v1, double v2, double v3,
-                             const double *a1, const double *a2,
-                             const double *a3) {
-  int MIN_INDEX = 0;
+// (v - a)**2 の和が最小になる a の要素のポインタを返す
+static const JYUSHIN_INDEX<double> *
+FindMinimumDistance(int SIZE, const JYUSHIN_INDEX<double> &v,
+                    const JYUSHIN_INDEX<double> *a) {
+  const JYUSHIN_INDEX<double> *MIN_ITEM = nullptr;
   double MIN_VALUE = DBL_MAX;
   for (int i = 0; i < SIZE; i++) {
-    double d = Square(v1 - a1[i]) + Square(v2 - a2[i]) + Square(v3 - a3[i]);
+    double d =
+        Square(v.Y - a[i].Y) + Square(v.U - a[i].U) + Square(v.V - a[i].V);
     if (d < MIN_VALUE) {
       MIN_VALUE = d;
-      MIN_INDEX = i;
+      MIN_ITEM = &a[i];
     }
   }
-  return MIN_INDEX;
+  return MIN_ITEM;
 }
 
 // パレット番号に変換し OUT に出力する
 void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
-               const double *VIN, int PALET_SIZE, const double *Y_JYUSHIN,
+               const double *VIN, int PALETTE_SIZE, const double *Y_JYUSHIN,
                const double *U_JYUSHIN, const double *V_JYUSHIN, uint8_t *OUT) {
   for (int i = 0; i < IMAGE_SIZE; i++) {
-    double Z[PALET_SIZE];
-    for (int j = 0; j < PALET_SIZE; j++) {
+    double Z[PALETTE_SIZE];
+    for (int j = 0; j < PALETTE_SIZE; j++) {
       Z[j] = Square(YIN[i] - Y_JYUSHIN[j]) + Square(UIN[i] - U_JYUSHIN[j]) +
              Square(VIN[i] - V_JYUSHIN[j]);
     }
-    ptrdiff_t MINZ_INDEX = std::min_element(&Z[0], &Z[PALET_SIZE]) - &Z[0];
+    ptrdiff_t MINZ_INDEX = std::min_element(&Z[0], &Z[PALETTE_SIZE]) - &Z[0];
     OUT[i] = static_cast<uint8_t>(MINZ_INDEX);
   }
 }
@@ -1180,7 +1181,7 @@ void Dithering(int IMAGE_SIZE, const double *YIN, const double *UIN,
 // パレット番号に変換し OUT に出力する (edon == 1)
 void Dithering1(int hsize, int vsize, int dither, double per,
                 const uint8_t *RIN, const uint8_t *GIN, const uint8_t *BIN,
-                int PALET_SIZE, const uint8_t *REDUCE_R,
+                int PALETTE_SIZE, const uint8_t *REDUCE_R,
                 const uint8_t *REDUCE_G, const uint8_t *REDUCE_B,
                 uint8_t *OUT) {
   int IMAGE_SIZE = hsize * vsize;
@@ -1274,7 +1275,7 @@ void Dithering1(int hsize, int vsize, int dither, double per,
       // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
       // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
       // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
-      int bst = FindMinimumDistanceIndex(PALET_SIZE, r, g, b, &REDUCE_R[0],
+      int bst = FindMinimumDistanceIndex(PALETTE_SIZE, r, g, b, &REDUCE_R[0],
                                          &REDUCE_G[0], &REDUCE_B[0]);
       // debug start
       // printf("gosa=%d\n",(int)est);
@@ -1446,7 +1447,7 @@ void Dithering1(int hsize, int vsize, int dither, double per,
   // IIRINに画像データがはいっている
 
   for (int i = 0; i < IMAGE_SIZE; i++) {
-    for (int j = 0; j < PALET_SIZE; j++) {
+    for (int j = 0; j < PALETTE_SIZE; j++) {
       if ((IIRIN[i] == (REDUCE_R[j])) && (IIGIN[i] == (REDUCE_G[j])) &&
           (IIBIN[i] == (REDUCE_B[j]))) {
         OUT[i] = j;
@@ -1455,12 +1456,10 @@ void Dithering1(int hsize, int vsize, int dither, double per,
   }
 }
 
-struct JYUSHIN_INDEX {
-  int32_t V, Y, U;
-  int32_t INDEX;
-};
-// V, Y, U の順に比較 (INDEX は比較しないことに注意)
-bool operator<(const JYUSHIN_INDEX &lhs, const JYUSHIN_INDEX &rhs) {
+// lhs < rhs を V, Y, U の順に比較 (INDEX は比較しないことに注意)
+template <typename T>
+static inline bool VYULess(const JYUSHIN_INDEX<T> &lhs,
+                           const JYUSHIN_INDEX<T> &rhs) {
   if (lhs.V == rhs.V) {
     if (lhs.Y == rhs.Y) {
       return lhs.U < rhs.U;
@@ -1469,16 +1468,18 @@ bool operator<(const JYUSHIN_INDEX &lhs, const JYUSHIN_INDEX &rhs) {
   }
   return lhs.V < rhs.V;
 }
-// V, Y, U が等価 (INDEX は比較しないことに注意)
-bool operator==(const JYUSHIN_INDEX &lhs, const JYUSHIN_INDEX &rhs) {
+
+// Y, U, V が等価 (INDEX は比較しないことに注意)
+template <typename T>
+static inline bool YUVEqual(const JYUSHIN_INDEX<T> &lhs,
+                            const JYUSHIN_INDEX<T> &rhs) {
   return (lhs.V == rhs.V) && (lhs.Y == rhs.Y) && (lhs.U == rhs.U);
 }
 
 // パレット番号に変換し OUT に出力する (edon == 2)
 void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
-                const double *YIN, const double *UIN, int PALET_SIZE,
-                const double *V_JYUSHIN1, const double *Y_JYUSHIN1,
-                const double *U_JYUSHIN1, uint8_t *OUT) {
+                const double *YIN, const double *UIN, int PALETTE_SIZE,
+                const JYUSHIN_INDEX<double> *JYUSHIN, uint8_t *OUT) {
   int IMAGE_SIZE = hsize * vsize;
 
   std::vector<int> IIRIN(IMAGE_SIZE);
@@ -1489,14 +1490,15 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
     IIGIN[i] = static_cast<int>(YIN[i]);
     IIBIN[i] = static_cast<int>(UIN[i]);
   }
-
-  std::vector<JYUSHIN_INDEX> IJYUSHIN_VYU(PALET_SIZE);
-  for (int i = 0; i < PALET_SIZE; i++) {
-    IJYUSHIN_VYU[i] = {static_cast<int>(V_JYUSHIN1[i]),
-                       static_cast<int>(Y_JYUSHIN1[i]),
-                       static_cast<int>(U_JYUSHIN1[i]), i};
+  // V, Y, U の順にソートされた JYUSHIN
+  std::vector<JYUSHIN_INDEX<int32_t>> IJYUSHIN_VYU_SORTED(PALETTE_SIZE);
+  for (int i = 0; i < PALETTE_SIZE; i++) {
+    IJYUSHIN_VYU_SORTED[i] = JYUSHIN_INDEX<int32_t>{
+        static_cast<int32_t>(JYUSHIN[i].Y), static_cast<int32_t>(JYUSHIN[i].U),
+        static_cast<int32_t>(JYUSHIN[i].V), JYUSHIN[i].INDEX};
   }
-  std::sort(IJYUSHIN_VYU.begin(), IJYUSHIN_VYU.end());
+  std::sort(IJYUSHIN_VYU_SORTED.begin(), IJYUSHIN_VYU_SORTED.end(),
+            VYULess<int32_t>);
 
   int mx = 0;
   if (dither == 0 || dither == 1) {
@@ -1558,12 +1560,14 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
             ((errorB[adr]) / (48.0 / (per + 0.0000001)));
       }
 
-      int bst = FindMinimumDistanceIndex(PALET_SIZE, r, g, b, &V_JYUSHIN1[0],
-                                         &Y_JYUSHIN1[0], &U_JYUSHIN1[0]);
+      // 関数の入り口で RGB = VYU にしているので YUV = GBR
+      JYUSHIN_INDEX<double> YUV{g, b, r, 0};
+      const JYUSHIN_INDEX<double> *bst =
+          FindMinimumDistance(PALETTE_SIZE, YUV, &JYUSHIN[0]);
 
-      re = r - (double)(V_JYUSHIN1[bst]);
-      ge = g - (double)(Y_JYUSHIN1[bst]);
-      be = b - (double)(U_JYUSHIN1[bst]);
+      re = r - bst->V;
+      ge = g - bst->Y;
+      be = b - bst->U;
 
       if (dither == 0) {
         (errorR[adr + 1]) += re * 7.0;
@@ -1679,9 +1683,9 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
         (errorB[adr + mx * 2 + 2]) += be;
       }
 
-      IIRIN[x + y * hsize] = static_cast<int>(V_JYUSHIN1[bst]);
-      IIGIN[x + y * hsize] = static_cast<int>(Y_JYUSHIN1[bst]);
-      IIBIN[x + y * hsize] = static_cast<int>(U_JYUSHIN1[bst]);
+      IIRIN[x + y * hsize] = static_cast<int>(bst->V);
+      IIGIN[x + y * hsize] = static_cast<int>(bst->Y);
+      IIBIN[x + y * hsize] = static_cast<int>(bst->U);
       // (IIRIN[x*vsize+y]) = (int)(REDUCE_R[OUT[x*vsize+y]]);
       // (IIGIN[x*vsize+y]) = (int)(REDUCE_G[OUT[x*vsize+y]]);
       // (IIBIN[x*vsize+y]) = (int)(REDUCE_B[OUT[x*vsize+y]]);
@@ -1712,14 +1716,15 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
 
   // OUT[i]
   // IIRINに画像データがはいっている
-  // 画素と等価な色を JYUSHIN_VYU から探す
-  // IJYUSHIN_VYU[n].INDEX にパレット番号が入っている
-  auto BEGIN = IJYUSHIN_VYU.begin();
-  auto END = IJYUSHIN_VYU.end();
+  // 画素と等価な色を IJYUSHIN_VYU_SORTED から探す
+  // IJYUSHIN_VYU_SORTED[n].INDEX にパレット番号が入っている
+  const JYUSHIN_INDEX<int32_t> *BEGIN = &IJYUSHIN_VYU_SORTED[0];
+  const JYUSHIN_INDEX<int32_t> *END = &IJYUSHIN_VYU_SORTED[PALETTE_SIZE];
   for (int i = 0; i < IMAGE_SIZE; i++) {
-    JYUSHIN_INDEX RGB{IIRIN[i], IIGIN[i], IIBIN[i], 0};
-    auto pIJYUSHIN_VYU = std::lower_bound(BEGIN, END, RGB);
-    if (pIJYUSHIN_VYU == END || !(*pIJYUSHIN_VYU == RGB)) {
+    // 関数の入り口で RGB = VYU にしているので YUV = GBR
+    JYUSHIN_INDEX<int32_t> YUV{IIGIN[i], IIBIN[i], IIRIN[i], 0};
+    auto pIJYUSHIN_VYU = std::lower_bound(BEGIN, END, YUV, VYULess<int32_t>);
+    if (pIJYUSHIN_VYU == END || !YUVEqual(*pIJYUSHIN_VYU, YUV)) {
       continue; // 見つからなかった
     }
     OUT[i] = pIJYUSHIN_VYU->INDEX;

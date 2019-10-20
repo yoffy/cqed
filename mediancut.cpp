@@ -1128,29 +1128,29 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   //分轄の中の画素数が多いものを分轄
   // if(PT[MEN][0].INDEXNUM >= PT[MEN][1].INDEXNUM){
 
-  uint8_t PALET_NO = 0;
+  uint8_t PALETTE_NO = 0;
   if ((bun == 1) || (bun == 2) || (bun == 3) || (bun == 4) || (bun == 5)) {
     if (PT[MEN][0].MAXDISTANCE /**PT[MEN][0].INDEXNUM*/ >=
         PT[MEN][1]
             .MAXDISTANCE /**PT[MEN][1].INDEXNUM*/) { // maxdistance div tuika
-      PALET_NO = 0;                                  // INDEXNO
+      PALETTE_NO = 0;                                // INDEXNO
     } else {
-      PALET_NO = 1;
+      PALETTE_NO = 1;
     }
   } else if (bun == 0) {
     if (PT[MEN][0].MAXDISTANCE * PT[MEN][0].INDEXNUM >=
         PT[MEN][1].MAXDISTANCE * PT[MEN][1].INDEXNUM) { // maxdistance div tuika
-      PALET_NO = 0;                                     // INDEXNO
+      PALETTE_NO = 0;                                   // INDEXNO
     } else {
-      PALET_NO = 1;
+      PALETTE_NO = 1;
     }
   }
 
-  auto U_RGB3 = SumEquals(IMAGE_SIZE, &INDEXED_COLOR[0], PALET_NO, &YIN[0],
+  auto U_RGB3 = SumEquals(IMAGE_SIZE, &INDEXED_COLOR[0], PALETTE_NO, &YIN[0],
                           &UIN[0], &VIN[0]);
-  std::get<0>(U_RGB3) /= (double)PT[MEN][PALET_NO].INDEXNUM;
-  std::get<1>(U_RGB3) /= (double)PT[MEN][PALET_NO].INDEXNUM;
-  std::get<2>(U_RGB3) /= (double)PT[MEN][PALET_NO].INDEXNUM;
+  std::get<0>(U_RGB3) /= (double)PT[MEN][PALETTE_NO].INDEXNUM;
+  std::get<1>(U_RGB3) /= (double)PT[MEN][PALETTE_NO].INDEXNUM;
+  std::get<2>(U_RGB3) /= (double)PT[MEN][PALETTE_NO].INDEXNUM;
   double U_R3 = std::get<0>(U_RGB3);
   double U_G3 = std::get<1>(U_RGB3);
   double U_B3 = std::get<2>(U_RGB3);
@@ -1160,7 +1160,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   // debug start
   // fprintf(stderr,"2kaimeheikin %d %d %d\n",U_R,U_G,U_B);
   // debug end
-  JacobiSetupEquals(IMAGE_SIZE, &INDEXED_COLOR[0], PALET_NO, &YIN[0], &UIN[0],
+  JacobiSetupEquals(IMAGE_SIZE, &INDEXED_COLOR[0], PALETTE_NO, &YIN[0], &UIN[0],
                     &VIN[0], U_RGB3, A);
   ind = Jacobi(ct, eps, A, A1, A2, X1, X2);
 
@@ -1190,7 +1190,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   // ohtsu tuika start
   for (int i = 0; i < IMAGE_SIZE; i++) {
-    if (INDEXED_COLOR[i] == PALET_NO) {
+    if (INDEXED_COLOR[i] == PALETTE_NO) {
       RR[i] = YIN[i] - U_R3;
       GG[i] = UIN[i] - U_G3;
       BB[i] = VIN[i] - U_B3;
@@ -1200,13 +1200,13 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   V[1] = X1[1][Y];
   V[2] = X1[2][Y];
   kaitenEquals(IMAGE_SIZE, V, &RR[0], &GG[0], &BB[0], &INDEXED_COLOR[0],
-               PALET_NO, &RRR[0], &GGG[0], &BBB[0]);
-  GASOSUU = PT[MEN][PALET_NO].INDEXNUM;
+               PALETTE_NO, &RRR[0], &GGG[0], &BBB[0]);
+  GASOSUU = PT[MEN][PALETTE_NO].INDEXNUM;
   for (int i = 0; i < IMAGE_SIZE; i++) {
     RRR33[i] = RRR[i];
   }
   for (int i = 0, k = 0; i < IMAGE_SIZE; i++) {
-    if (INDEXED_COLOR[i] == PALET_NO) {
+    if (INDEXED_COLOR[i] == PALETTE_NO) {
       RR[k] = RRR[i];
       GG[k] = GGG[i];
       BB[k] = BBB[i];
@@ -1236,7 +1236,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   int k3 = 0, l3 = 0;
   for (int i = 0; i < IMAGE_SIZE; i++) {
-    if (INDEXED_COLOR[i] == PALET_NO) {
+    if (INDEXED_COLOR[i] == PALETTE_NO) {
       // ZZ = X1[0][Y]*((double)(((YIN[i]))) - ((double)(U_R)+(*XXX))) +
       // X1[1][Y]*((double)(((UIN[i]))) - ((double)(U_G)+(*YYY))) +
       // X1[2][Y]*((double)(((VIN[i]))) - ((double)(U_B)+(*ZZZ))) ;
@@ -1250,7 +1250,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       }
     }
   }
-  PT[MEN][0].INDEXNO = PALET_NO;
+  PT[MEN][0].INDEXNO = PALETTE_NO;
   PT[MEN][1].INDEXNO = DIVIDENUM - 1;
   PT[MEN][0].INDEXNUM = l3;
   PT[MEN][1].INDEXNUM = k3;
@@ -1637,7 +1637,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
   // max distance div end
 
-  if (PALET_NO == 0) {
+  if (PALETTE_NO == 0) {
     for (int i = 2; i <= DIVIDENUM - 1; i++) {
       PT[MEN][i].INDEXNO = PT[NMEN][i - 1].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 1].INDEXNUM;
@@ -1645,8 +1645,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           PT[NMEN][i - 1].MAXDISTANCE; // max distance div tuika
     }
   }
-  if ((PALET_NO >= 1) && (PALET_NO <= (DIVIDENUM - 3))) {
-    for (int i = 2; i <= PALET_NO + 1; i++) {
+  if ((PALETTE_NO >= 1) && (PALETTE_NO <= (DIVIDENUM - 3))) {
+    for (int i = 2; i <= PALETTE_NO + 1; i++) {
       //// i i-2
       PT[MEN][i].INDEXNO = PT[NMEN][i - 2].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 2].INDEXNUM;
@@ -1654,7 +1654,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           PT[NMEN][i - 2].MAXDISTANCE; // max distance div tuika
     }
 
-    for (int i = PALET_NO + 2; i <= DIVIDENUM - 1; i++) {
+    for (int i = PALETTE_NO + 2; i <= DIVIDENUM - 1; i++) {
       //// i i-1
       PT[MEN][i].INDEXNO = PT[NMEN][i - 1].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 1].INDEXNUM;
@@ -1662,8 +1662,8 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
           PT[NMEN][i - 1].MAXDISTANCE; // max distance div tuika
     }
   }
-  if (PALET_NO == (DIVIDENUM - 2)) {
-    for (int i = 2; i <= PALET_NO + 1; i++) {
+  if (PALETTE_NO == (DIVIDENUM - 2)) {
+    for (int i = 2; i <= PALETTE_NO + 1; i++) {
       //// i i-2
       PT[MEN][i].INDEXNO = PT[NMEN][i - 2].INDEXNO;
       PT[MEN][i].INDEXNUM = PT[NMEN][i - 2].INDEXNUM;
@@ -2437,16 +2437,11 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   Dithering(IMAGE_SIZE, &YIN[0], &UIN[0], &VIN[0], IROSUU, &Y_JYUSHIN[0],
             &U_JYUSHIN[0], &V_JYUSHIN[0], &PALETGAZOU[0]);
 
-  double *Y_JYUSHIN1;
-  double *U_JYUSHIN1;
-  double *V_JYUSHIN1;
-  Y_JYUSHIN1 = (double *)malloc(sizeof(double) * IROSUU);
-  U_JYUSHIN1 = (double *)malloc(sizeof(double) * IROSUU);
-  V_JYUSHIN1 = (double *)malloc(sizeof(double) * IROSUU);
+  // [YUV]_JYUSHIN1 のコピー ([YUV]_JYUSHIN1 はこの後変更されるため)
+  std::vector<JYUSHIN_INDEX<double>> JYUSHIN1(IROSUU);
   for (int i = 0; i < IROSUU; i++) {
-    Y_JYUSHIN1[i] = Y_JYUSHIN[i];
-    U_JYUSHIN1[i] = U_JYUSHIN[i];
-    V_JYUSHIN1[i] = V_JYUSHIN[i];
+    JYUSHIN1[i] =
+        JYUSHIN_INDEX<double>{Y_JYUSHIN[i], U_JYUSHIN[i], V_JYUSHIN[i], i};
   }
 
   // YUVパレットが完成
@@ -2979,7 +2974,7 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
 
   if (edon == 2) {
     Dithering2(hsize, vsize, dither, per, &VIN[0], &YIN[0], &UIN[0], IROSUU,
-               &V_JYUSHIN1[0], &Y_JYUSHIN1[0], &U_JYUSHIN1[0], &PALETGAZOU[0]);
+               &JYUSHIN1[0], &PALETGAZOU[0]);
   } // edon if end
 
 } // median cut end
