@@ -330,24 +330,21 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
       // RrIN[i];//(0.4000*(float)(RrIN[i])-0.3346*(float)(GgIN[i])-0.0653*(float)(BbIN[i]));
     }
   }
-  double *KARIU, *KARIV;
-  KARIU = (double *)malloc(sizeof(double) * IMAGE_SIZE);
-  KARIV = (double *)malloc(sizeof(double) * IMAGE_SIZE);
   if (cs == 4 || cs == 9) {
     for (int i = 0; i < IMAGE_SIZE; i++) {
-      KARIU[i] = UIN[i] * /*cos(IRO_THIETA)*/ 0.941996495 +
-                 VIN[i] * /*sin(IRO_THIETA)*/ 0.13632709;
-      KARIV[i] = UIN[i] * /*sin(IRO_THIETA)*/ 0.118202579 +
-                 VIN[i] * /*cos(IRO_THIETA)*/ 1.201426141;
-      UIN[i] = KARIU[i];
-      VIN[i] = KARIV[i];
+      double KARIU = UIN[i] * /*cos(IRO_THIETA)*/ 0.941996495 +
+                     VIN[i] * /*sin(IRO_THIETA)*/ 0.13632709;
+      double KARIV = UIN[i] * /*sin(IRO_THIETA)*/ 0.118202579 +
+                     VIN[i] * /*cos(IRO_THIETA)*/ 1.201426141;
+      UIN[i] = KARIU;
+      VIN[i] = KARIV;
     }
   } else {
     for (int i = 0; i < IMAGE_SIZE; i++) {
-      KARIU[i] = UIN[i] * cos(IRO_THIETA) - VIN[i] * sin(IRO_THIETA);
-      KARIV[i] = UIN[i] * sin(IRO_THIETA) + VIN[i] * cos(IRO_THIETA);
-      UIN[i] = KARIU[i];
-      VIN[i] = KARIV[i];
+      double KARIU = UIN[i] * cos(IRO_THIETA) - VIN[i] * sin(IRO_THIETA);
+      double KARIV = UIN[i] * sin(IRO_THIETA) + VIN[i] * cos(IRO_THIETA);
+      UIN[i] = KARIU;
+      VIN[i] = KARIV;
     }
   }
   for (int i = 0; i < IMAGE_SIZE; i++) {
@@ -2477,24 +2474,24 @@ void MedianCut(int hsize, int vsize, unsigned char *RIN, unsigned char *GIN,
   }
   if (cs == 4 || cs == 9) {
     for (int i = 0; i < IROSUU; i++) {
-      KARIU[i] =
+      double KARIU =
           U_JYUSHIN[i] / ((float)(bmult)) * /*cos(IRO_THIETA)*/ 1.076908585 -
           V_JYUSHIN[i] / ((float)(rmult)) * /*sin(IRO_THIETA)*/ 0.122197951;
-      KARIV[i] =
+      double KARIV =
           -U_JYUSHIN[i] / ((float)(bmult)) * /*sin(IRO_THIETA)*/ 0.105951892 +
           V_JYUSHIN[i] / ((float)(rmult)) * /*cos(IRO_THIETA)*/ 0.844366606;
-      U_JYUSHIN[i] = KARIU[i];
-      V_JYUSHIN[i] = KARIV[i];
+      U_JYUSHIN[i] = KARIU;
+      V_JYUSHIN[i] = KARIV;
       Y_JYUSHIN[i] /= gmult;
     }
   } else {
     for (int i = 0; i < IROSUU; i++) {
-      KARIU[i] = U_JYUSHIN[i] / ((float)(bmult)) * cos(IRO_THIETA) +
-                 V_JYUSHIN[i] / ((float)(rmult)) * sin(IRO_THIETA);
-      KARIV[i] = -U_JYUSHIN[i] / ((float)(bmult)) * sin(IRO_THIETA) +
-                 V_JYUSHIN[i] / ((float)(rmult)) * cos(IRO_THIETA);
-      U_JYUSHIN[i] = KARIU[i];
-      V_JYUSHIN[i] = KARIV[i];
+      double KARIU = U_JYUSHIN[i] / ((float)(bmult)) * cos(IRO_THIETA) +
+                     V_JYUSHIN[i] / ((float)(rmult)) * sin(IRO_THIETA);
+      double KARIV = -U_JYUSHIN[i] / ((float)(bmult)) * sin(IRO_THIETA) +
+                     V_JYUSHIN[i] / ((float)(rmult)) * cos(IRO_THIETA);
+      U_JYUSHIN[i] = KARIU;
+      V_JYUSHIN[i] = KARIV;
       Y_JYUSHIN[i] /= gmult;
     }
   }
