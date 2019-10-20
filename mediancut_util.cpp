@@ -1438,20 +1438,49 @@ void Dithering1(int hsize, int vsize, int dither, double per,
   }
 }
 
+struct JYUSHIN_INDEX {
+  int32_t V, Y, U;
+  int32_t INDEX;
+};
+// V, Y, U の順に比較 (INDEX は比較しないことに注意)
+bool operator<(const JYUSHIN_INDEX &lhs, const JYUSHIN_INDEX &rhs) {
+  if (lhs.V == rhs.V) {
+    if (lhs.Y == rhs.Y) {
+      return lhs.U < rhs.U;
+    }
+    return lhs.Y < rhs.Y;
+  }
+  return lhs.V < rhs.V;
+}
+// V, Y, U が等価 (INDEX は比較しないことに注意)
+bool operator==(const JYUSHIN_INDEX &lhs, const JYUSHIN_INDEX &rhs) {
+  return (lhs.V == rhs.V) && (lhs.Y == rhs.Y) && (lhs.U == rhs.U);
+}
+
 // パレット番号に変換し OUT に出力する (edon == 2)
 void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
                 const double *YIN, const double *UIN, int PALET_SIZE,
                 const double *V_JYUSHIN1, const double *Y_JYUSHIN1,
                 const double *U_JYUSHIN1, uint8_t *OUT) {
   int IMAGE_SIZE = hsize * vsize;
-  std::vector<double> IIRIN(IMAGE_SIZE);
-  std::vector<double> IIGIN(IMAGE_SIZE);
-  std::vector<double> IIBIN(IMAGE_SIZE);
+
+  std::vector<int> IIRIN(IMAGE_SIZE);
+  std::vector<int> IIGIN(IMAGE_SIZE);
+  std::vector<int> IIBIN(IMAGE_SIZE);
   for (int i = 0; i < IMAGE_SIZE; i++) {
-    IIRIN[i] = (VIN[i]);
-    IIGIN[i] = (YIN[i]);
-    IIBIN[i] = (UIN[i]);
+    IIRIN[i] = static_cast<int>(VIN[i]);
+    IIGIN[i] = static_cast<int>(YIN[i]);
+    IIBIN[i] = static_cast<int>(UIN[i]);
   }
+
+  std::vector<JYUSHIN_INDEX> IJYUSHIN_VYU(PALET_SIZE);
+  for (int i = 0; i < PALET_SIZE; i++) {
+    IJYUSHIN_VYU[i] = {static_cast<int>(V_JYUSHIN1[i]),
+                       static_cast<int>(Y_JYUSHIN1[i]),
+                       static_cast<int>(U_JYUSHIN1[i]), i};
+  }
+  std::sort(IJYUSHIN_VYU.begin(), IJYUSHIN_VYU.end());
+
   int mx = 0;
   if (dither == 0 || dither == 1) {
     mx = hsize + 2;
@@ -1481,9 +1510,7 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
       } else if (dither == 2 || dither == 3) {
         adr = x + 2;
       }
-      // r= (IIRIN[x*vsize+y])+((errorR[adr])/16);
-      // g= (IIGIN[x*vsize+y])+((errorG[adr])/16);
-      // b= (IIBIN[x*vsize+y])+((errorB[adr])/16);
+
       if (dither == 0) {
         r = (double)(VIN[x + y * hsize]) +
             ((errorR[adr]) / (16.0 / (per + 0.0000001)) /*32.0*/);
@@ -1513,50 +1540,14 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
         b = (double)(UIN[x + y * hsize]) +
             ((errorB[adr]) / (48.0 / (per + 0.0000001)));
       }
-      /* if(r > 255.0){
-      r=255.0;
-      }
-      if(r < 0.0){
-      r=0.0;
-      }
-      if(g > 255.0){
-      g=255.0;
-      }
-      if(g < 0.0){
-      g=0.0;
-      }
-      if(b > 255.0){
-      b=255.0;
-      }
-      if(b < 0.0){
-      b=0.0;
-      }*/
-      // r= (IIRIN[x*vsize+y]);//+((errorR[adr])/16);
-      // g= (IIGIN[x*vsize+y]);//+((errorG[adr])/16);
-      // b= (IIBIN[x*vsize+y]);//+((errorB[adr])/16);
+
       int bst = FindMinimumDistanceIndex(PALET_SIZE, r, g, b, &V_JYUSHIN1[0],
                                          &Y_JYUSHIN1[0], &U_JYUSHIN1[0]);
-      // debug start
-      // printf("gosa=%d\n",(int)est);
-      // debug end
+
       re = r - (double)(V_JYUSHIN1[bst]);
       ge = g - (double)(Y_JYUSHIN1[bst]);
       be = b - (double)(U_JYUSHIN1[bst]);
-      // (errorR[adr+1]) += re*7;
-      // (errorG[adr+1]) += ge*7;
-      // (errorB[adr+1]) += be*7;
 
-      // (errorR[adr+mx-1]) += re*3;
-      // (errorG[adr+mx-1]) += ge*3;
-      // (errorB[adr+mx-1]) += be*3;
-
-      // (errorR[adr+mx]) += re*5;
-      // (errorG[adr+mx]) += ge*5;
-      // (errorB[adr+mx]) += be*5;
-
-      // (errorR[adr+mx+1]) += re;
-      // (errorG[adr+mx+1]) += ge;
-      // (errorB[adr+mx+1]) += be;
       if (dither == 0) {
         (errorR[adr + 1]) += re * 7.0;
         (errorG[adr + 1]) += ge * 7.0;
@@ -1671,9 +1662,9 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
         (errorB[adr + mx * 2 + 2]) += be;
       }
 
-      (IIRIN[x + y * hsize]) = (V_JYUSHIN1[bst]);
-      (IIGIN[x + y * hsize]) = (Y_JYUSHIN1[bst]);
-      (IIBIN[x + y * hsize]) = (U_JYUSHIN1[bst]);
+      IIRIN[x + y * hsize] = static_cast<int>(V_JYUSHIN1[bst]);
+      IIGIN[x + y * hsize] = static_cast<int>(Y_JYUSHIN1[bst]);
+      IIBIN[x + y * hsize] = static_cast<int>(U_JYUSHIN1[bst]);
       // (IIRIN[x*vsize+y]) = (int)(REDUCE_R[OUT[x*vsize+y]]);
       // (IIGIN[x*vsize+y]) = (int)(REDUCE_G[OUT[x*vsize+y]]);
       // (IIBIN[x*vsize+y]) = (int)(REDUCE_B[OUT[x*vsize+y]]);
@@ -1704,15 +1695,16 @@ void Dithering2(int hsize, int vsize, int dither, double per, const double *VIN,
 
   // OUT[i]
   // IIRINに画像データがはいっている
-
+  // 画素と等価な色を JYUSHIN_VYU から探す
+  // IJYUSHIN_VYU[n].INDEX にパレット番号が入っている
+  auto BEGIN = IJYUSHIN_VYU.begin();
+  auto END = IJYUSHIN_VYU.end();
   for (int i = 0; i < IMAGE_SIZE; i++) {
-    for (int j = 0; j < PALET_SIZE; j++) { // hotspot
-      if (((int)IIRIN[i] == (int)V_JYUSHIN1[j]) &&
-          ((int)IIGIN[i] == (int)Y_JYUSHIN1[j]) &&
-          ((int)IIBIN[i] == (int)U_JYUSHIN1[j])) {
-        OUT[i] = j;
-        break;
-      }
+    JYUSHIN_INDEX RGB{IIRIN[i], IIGIN[i], IIBIN[i], 0};
+    auto pIJYUSHIN_VYU = std::lower_bound(BEGIN, END, RGB);
+    if (pIJYUSHIN_VYU == END || !(*pIJYUSHIN_VYU == RGB)) {
+      continue; // 見つからなかった
     }
+    OUT[i] = pIJYUSHIN_VYU->INDEX;
   }
 }
